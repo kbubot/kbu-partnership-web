@@ -1,7 +1,10 @@
+require('dotenv').config();
 const express = require("express");
 const multer = require("multer");
 const { v4: uuid } = require("uuid");
 const mime = require("mime-types");
+const mongoose = require('mongoose');
+const Image = require('./models/Image');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "./uploads"),
@@ -20,9 +23,27 @@ const upload = multer({
 const app = express();
 const PORT = 5000;
 
-app.use("/uploads", express.static("uploads"));
+mongoose
+  .connect(process.env.MONGO_URL, {
+    useCreateIndex: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(_ => {
+    console.log("MongoDB Connected.")
+    app.use("/uploads", express.static("uploads"));
 
-app.post('/upload', upload.single("image"), (req, res) => {
-  res.json(req.file);
-});
-app.listen(PORT, () => console.log('Express server listening on PORT ' + PORT));
+    app.post('/images', upload.single("image"), async (req, res) => {
+      const image = await new Image({
+        key: req.file.filename,
+        originalFileName: req.file.originalname
+      }).save()
+      res.json(image);
+    });
+    app.get("/images", async (req, res) => {
+      const images = await Image.find();
+      res.json(images);
+    });
+    app.listen(PORT, () => console.log('Express server listening on PORT ' + PORT));
+  })
+  .catch(err => console.log(err));
