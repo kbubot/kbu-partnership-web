@@ -26,17 +26,17 @@ const ToolBar = () => {
         <span
           onClick={logOutHandler}
           style={{ float: "right" }}
-        >로그아웃</span>
+        >로그아웃({me.name})</span>
       ) : (
         <>
           <Link to="/auth/login">
             <span style={{ float: "right" }}>로그인</span>
           </Link >
+          <Link to="/auth/register">
+            <span style={{ float: "right", marginRight: 10 }}>회원가입</span>
+          </Link>
         </>
       )}
-      <Link to="/auth/register">
-        <span style={{ float: "right", marginRight: 10 }}>회원가입</span>
-      </Link>
     </div >
   )
 }

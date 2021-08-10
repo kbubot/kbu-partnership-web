@@ -7,12 +7,25 @@ export const AuthProvider = ({ children }) => {
   const [me, setMe] = useState();
   console.log(me);
   useEffect(() => {
-    if (me)
+    const sessionId = localStorage.getItem("sessionId");
+    if (me) {
       axios.defaults.headers.common.sessionid = me.sessionId;
-    else
+      localStorage.setItem("sessionId", me.sessionId);
+    } else if (sessionId) {
+      axios.get("/users/me",  { headers: { sessionid: sessionId } })
+        .then(result => setMe({
+          userId: result.data.userId,
+          sessionId: result.data.sessionId,
+          name: result.data.name,
+        }))
+        .catch(() => {
+          localStorage.removeItem("sessionId");
+          delete axios.defaults.headers.common.sessionid;
+        });
+    } else
       delete axios.defaults.headers.common.sessionid;
-  }, [me])
+  }, [me]);
   return (
     <AuthContext.Provider value={[me, setMe]}> {children}</AuthContext.Provider>
-  )
-}
+  );
+};
