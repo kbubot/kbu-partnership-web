@@ -5,14 +5,13 @@ export const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
   const [me, setMe] = useState();
-  console.log(me);
   useEffect(() => {
     const sessionId = localStorage.getItem("sessionId");
     if (me) {
       axios.defaults.headers.common.sessionid = me.sessionId;
       localStorage.setItem("sessionId", me.sessionId);
     } else if (sessionId) {
-      axios.get("/users/me",  { headers: { sessionid: sessionId } })
+      axios.get("/users/me", { headers: { sessionid: sessionId } })
         .then(result => setMe({
           userId: result.data.userId,
           sessionId: result.data.sessionId,

@@ -25,7 +25,6 @@ const LoginPage = () => {
       history.push("/");
       toast.success("로그인!");
     } catch (err) {
-      console.log(err.response);
       toast.error(err.response.data.message);
     }
   }
