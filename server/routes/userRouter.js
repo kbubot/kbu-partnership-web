@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const userRouter = Router();
 const User = require("../models/User");
+const Image = require('../models/Image');
 const { hash, compare } = require("bcryptjs");
 
 userRouter.post("/register", async (req, res) => {
@@ -19,7 +20,7 @@ userRouter.post("/register", async (req, res) => {
     const session = user.sessions[0];
     res.json({
       message: "user registered",
-      userId: user.username,
+      userId: user.id,
       sessionId: session._id,
       name: user.name
     });
@@ -40,7 +41,7 @@ userRouter.patch("/login", async (req, res) => {
     await user.save();
     res.json({
       message: "user validated",
-      userId: user.username,
+      userId: user.id,
       sessionId: session._id,
       name: user.name
     });
@@ -67,12 +68,22 @@ userRouter.get("/me", (req, res) => {
       throw new Error("권한이 없습니다.");
     res.json({
       message: "success",
-      userId: req.user.username,
+      userId: req.user.id,
       sessionId: req.headers.sessionid,
       name: req.user.name
     });
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+userRouter.get("/me/images", async (req, res) => {
+  try {
+    if (!req.user)
+      throw new Error("권한이 없습니다.");
+    const images = await Image.find({ "user._id": req.user.id })
+    res.json(images);
+  } catch (err) {
+    res.status(400, { message: err.message });
   }
 });
 
