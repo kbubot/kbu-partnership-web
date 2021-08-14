@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 
@@ -7,13 +7,18 @@ export const ImageProvider = (prop) => {
   const [images, setImages] = useState([]);
   const [myImages, setMyImages] = useState([]);
   const [isPublic, setIsPublic] = useState(false);
+  const [imageUrl, setImageUrl] = useState("/images");
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [me] = useContext(AuthContext);
 
   useEffect(() => {
-    axios.get("/images")
-      .then(result => setImages(result.data))
-      .catch(err => console.log(err));
-  }, []);
+    setImageLoading(true);
+    axios.get(imageUrl)
+      .then(result => setImages(prevData => [...prevData, ...result.data]))
+      .catch(err => setImageError(err))
+      .finally(_ => setImageLoading(false));
+  }, [imageUrl]);
   useEffect(() => {
     if (me) {
       setTimeout(_ => {
@@ -21,16 +26,29 @@ export const ImageProvider = (prop) => {
           .then(result => setMyImages(result.data))
           .catch(err => console.log(err));
       }, 0)
-    }
-    else {
+    } else {
       setMyImages([]);
       setIsPublic(true);
     }
   }, [me]);
+
+  const lastImageId = images.length > 0 ? images[images.length - 1]._id : null;
+  const loaderMoreImages = useCallback(() => {
+    if (imageLoading || !lastImageId)
+      return;
+    setImageUrl(`/images?lastid=${lastImageId}`);
+  }, [lastImageId, imageLoading]);
+
   return (
-    <ImageContext.Provider value={{
-      images, setImages, myImages, setMyImages, isPublic, setIsPublic
-    }}>
+    <ImageContext.Provider
+      value={{
+        images, setImages,
+        myImages, setMyImages,
+        isPublic, setIsPublic,
+        loaderMoreImages,
+        imageLoading,
+        imageError
+      }}>
       {prop.children}
     </ImageContext.Provider>
   )
