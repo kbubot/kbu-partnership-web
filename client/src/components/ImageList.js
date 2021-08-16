@@ -35,6 +35,9 @@ const ImageList = () => {
   }, [loaderMoreImages]);
 
   const imgTagList = images.map((image, index) =>
+  /**
+   * hover했을시 몇년도 제휴업체인지에 대한 정보
+   */
   (<Link
     key={image.key}
     to={`/images/${image._id}`}
@@ -42,7 +45,7 @@ const ImageList = () => {
   >
     <img
       alt=""
-      src={`http://localhost:5000/uploads/${image.key}`}
+      src={`https://kbu-partnership-image-upload.s3.ap-northeast-2.amazonaws.com/raw/${image.key}`}
     />
   </Link>));
   return (

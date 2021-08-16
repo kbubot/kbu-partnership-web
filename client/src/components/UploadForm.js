@@ -10,7 +10,7 @@ const UploadForm = _ => {
   const { setImages, setMyImages } = useContext(ImageContext);
   const [files, setFiles] = useState(null);
   const [previews, setPreviews] = useState([]);
-  const [percent, setPercent] = useState(0);
+  const [percent, setPercent] = useState([]);
   const [isPublic, setIsPublic] = useState(true);
   const inputRef = useRef();
 
@@ -39,6 +39,53 @@ const UploadForm = _ => {
     );
     setPreviews(imagePreviews);
   };
+  const onSubmitV2 = async e => {
+    e.preventDefault();
+    try {
+      const presignedData = await axios.post('/images/presigned', {
+        contentTypes: [...files].map(file => file.type)
+      });
+      await Promise.all(
+        [...files].map((file, index) => {
+          const { presigned } = presignedData.data[index];
+          const formData = new FormData();
+          for (const key in presigned.fields)
+            formData.append(key, presigned.fields[key]);
+          formData.append("Content-Type", file.type);
+          formData.append("file", file);
+          return axios.post(presigned.url, formData, {
+            onUploadProgress: e => {
+              setPercent(prevData => {
+                const newData = [...prevData];
+                newData[index] = Math.round(100 * e.loaded / e.total);
+                return newData;
+              });
+            },
+          });
+        }));
+      const res = await axios.post("/images", {
+        images: [...files].map((file, index) => ({
+          imageKey: presignedData.data[index].imageKey,
+          originalname: file.name
+        })),
+        public: isPublic
+      });
+      if (isPublic)
+        setImages(prevData => [...res.data, ...prevData]);
+      setMyImages(prevData => [...res.data, ...prevData]);
+      toast.success("이미지 업로드 성공!");
+      setTimeout(() => {
+        setPercent([]);
+        setPreviews([]);
+        inputRef.current.value = null;
+      }, 3000);
+    } catch (err) {
+      toast.error(err.response.data.message);
+      setPercent([]);
+      setPreviews([]);
+      console.error(err);
+    }
+  }
   const onSubmit = async e => {
     /**
      * TODO: 텍스트 자료도 같이 보내줘야함.
@@ -72,26 +119,28 @@ const UploadForm = _ => {
     }
   }
   const previewImages = previews.map((preview, index) => (
-    <img
-      key={index}
-      style={{ width: 200, height: 200, objectFit: 'cover' }}
-      src={preview.imgSrc}
-      alt=""
-      className={`image-preview ${preview.imgSrc && "image-preview-show"}`}
-    />
+    <div key={index}>
+      <img
+        style={{ width: 200, height: 200, objectFit: 'cover' }}
+        src={preview.imgSrc}
+        alt=""
+        className={`image-preview ${preview.imgSrc && "image-preview-show"}`}
+      />
+      <ProgressBar percent={percent[index]} />
+    </div>
   ));
   const fileName = previews.length === 0 ?
     "이미지 파일을 업로드 해주세요." :
     previews.reduce((previous, current) => previous + ` ${current.fileName}`, "");
   return (
-    <form className="file-sender" onSubmit={onSubmit}>
+    <form className="file-sender" onSubmit={onSubmitV2}>
       <div style={{
         display: "flex",
+        justifyContent: 'space-around',
         flexWrap: "wrap"
       }}>
         {previewImages}
       </div>
-      <ProgressBar percent={percent} />
       <div className="file-dropper">
         {fileName}
         <input
