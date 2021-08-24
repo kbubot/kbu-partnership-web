@@ -2,51 +2,32 @@ const { Router } = require("express");
 const imageRouter = Router();
 const Image = require('../models/Image');
 const upload = require('../middleware/imageUpload');
+const fs = require("fs");
+const { promisify } = require("util");
 const mongoose = require('mongoose');
-const { s3, getSignedUrl } = require('../aws');
-const { v4: uuid } = require("uuid");
-const mime = require("mime-types");
 
-imageRouter.post("/presigned", async (req, res) => {
-  try {
-    if (!req.user)
-      throw new Error("권한이 없습니다.");
-    const { contentTypes } = req.body;
-    if (!Array.isArray(contentTypes))
-      throw new Error("invalid contentTypes");
-    const presignedData = await Promise.all(
-      contentTypes.map(async contentType => {
-        const imageKey = `${uuid()}.${mime.extension(contentType)}`;
-        const key = `raw/${imageKey}`
-        const presigned = await getSignedUrl({ key });
-        return { imageKey, presigned };
-      }));
-    res.json(presignedData);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
+const fileUnlink = promisify(fs.unlink);
 
 imageRouter.post('/', upload.array("image", 5), async (req, res) => {
   try {
     if (!req.user)
       throw new Error("권한이 없습니다.");
-    const { images, public } = req.body;
-    const imageDocs = await Promise.all(
-      images.map(
-        image => new Image({
+    const images = await Promise.all(
+      req.files.map(async file => {
+        const image = await new Image({
           user: {
             _id: req.user.id,
             name: req.user.name,
             username: req.user.username,
           },
-          public,
-          key: image.imageKey,
-          originalFileName: image.originalname
-        }).save()
-      )
+          public: req.body.public,
+          key: file.filename,
+          originalFileName: file.originalname
+        }).save();
+        return image
+      })
     );
-    res.json(imageDocs);
+    res.json(images);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -95,22 +76,7 @@ imageRouter.delete("/:imageId", async (req, res) => {
     const image = await Image.findOneAndDelete({ _id: req.params.imageId });
     if (!image)
       return res.json({ message: "요청하신 이미지는 이미 삭제되었습니다." });
-    /**
-     * TODO: Need to deprecate
-     * const fs = require("fs");
-     * const { promisify } = require("util");
-     * const fileUnlink = promisify(fs.unlink);
-     * await fileUnlink(`./uploads/${image.key}`);
-     */
-    s3.deleteObject({
-      Bucket: "kbu-partnership-image-upload",
-      Key: `raw/${image.key}`
-    },
-      (error) => {
-        if (error)
-          throw error;
-      }
-    );
+    await fileUnlink(`./uploads/${image.key}`);
     res.json({ message: "요청하신 이미지가 삭제되었습니다.", image });
   } catch (err) {
     res.status(400).json({ message: err.message });

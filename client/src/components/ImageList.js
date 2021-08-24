@@ -2,7 +2,6 @@ import React, { useContext, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { ImageContext } from '../context/ImageContext';
-import Image from './Image';
 import './ImageList.css';
 
 const ImageList = () => {
@@ -36,15 +35,15 @@ const ImageList = () => {
   }, [loaderMoreImages]);
 
   const imgTagList = images.map((image, index) =>
-  /**
-   * hover했을시 몇년도 제휴업체인지에 대한 정보
-   */
   (<Link
     key={image.key}
     to={`/images/${image._id}`}
     ref={index + 1 === images.length ? elementRef : undefined}
   >
-    <Image imageUrl={`https://d20ukuy21cynd9.cloudfront.net/w140/${image.key}`} />
+    <img
+      alt=""
+      src={`http://localhost:5000/uploads/${image.key}`}
+    />
   </Link>));
   return (
     <div>

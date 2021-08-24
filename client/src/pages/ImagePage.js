@@ -83,7 +83,7 @@ const ImagePage = () => {
       <img
         style={{ width: "100%" }}
         alt={imageId}
-        src={`https://d20ukuy21cynd9.cloudfront.net/w600/${image.key}`}
+        src={`http://localhost:5000/uploads/${image.key}`}
       />
       <span>좋아요 {image.likes.length}</span>
       {me && image.user._id === me.userId &&
