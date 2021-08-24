@@ -2,6 +2,7 @@ import React, { useContext, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { ImageContext } from '../context/ImageContext';
+import Image from './Image';
 import './ImageList.css';
 
 const ImageList = () => {
@@ -43,10 +44,7 @@ const ImageList = () => {
     to={`/images/${image._id}`}
     ref={index + 1 === images.length ? elementRef : undefined}
   >
-    <img
-      alt=""
-      src={`https://kbu-partnership-image-upload.s3.ap-northeast-2.amazonaws.com/raw/${image.key}`}
-    />
+    <Image imageUrl={`https://d20ukuy21cynd9.cloudfront.net/w140/${image.key}`} />
   </Link>));
   return (
     <div>
