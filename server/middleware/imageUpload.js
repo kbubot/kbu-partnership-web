@@ -3,7 +3,7 @@ const { v4: uuid } = require("uuid");
 const mime = require("mime-types");
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "./uploads"),
+  destination: (req, file, cb) => cb(null, "./uploads/raw"),
   filename: (req, file, cb) => cb(null, `${uuid()}.${mime.extension(file.mimetype)}`),
 })
 

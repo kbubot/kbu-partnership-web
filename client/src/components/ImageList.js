@@ -42,7 +42,7 @@ const ImageList = () => {
   >
     <img
       alt=""
-      src={`http://localhost:5000/uploads/${image.key}`}
+      src={`http://localhost:5000/uploads/raw/${image.key}`}
     />
   </Link>));
   return (

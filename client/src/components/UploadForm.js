@@ -45,6 +45,7 @@ const UploadForm = _ => {
      * TODO: 텍스트 자료도 같이 보내줘야함.
      */
     e.preventDefault();
+    setIsLoading(true);
     const formData = new FormData();
     for (let file of files)
       formData.append("image", file);
@@ -58,17 +59,20 @@ const UploadForm = _ => {
       });
       if (isPublic)
         setImages(prevData => [...res.data, ...prevData]);
-      setMyImages(prevData => [...res.data, ...prevData]);
+      else
+        setMyImages(prevData => [...res.data, ...prevData]);
       toast.success("이미지 업로드 성공!");
       setTimeout(() => {
         setPercent(0);
         setPreviews([]);
+        setIsLoading(false);
         inputRef.current.value = null;
       }, 3000);
     } catch (err) {
       toast.error(err.response.data.message);
       setPercent(0);
       setPreviews([]);
+      setIsLoading(false);
       console.error(err);
     }
   }

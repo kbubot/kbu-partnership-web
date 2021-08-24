@@ -1,3 +1,6 @@
-/node_modules
+node_modules/
+uploads/w140/*
+uploads/w600/*
+uploads/raw/*
 .package-lock.json
 .env

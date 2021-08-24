@@ -5,8 +5,14 @@ const upload = require('../middleware/imageUpload');
 const fs = require("fs");
 const { promisify } = require("util");
 const mongoose = require('mongoose');
+const sharp = require('sharp');
 
 const fileUnlink = promisify(fs.unlink);
+
+const transformationOptions = [
+  { name: 'w140', width: 140 },
+  { name: 'w600', width: 600 },
+]
 
 imageRouter.post('/', upload.array("image", 5), async (req, res) => {
   try {
@@ -24,6 +30,20 @@ imageRouter.post('/', upload.array("image", 5), async (req, res) => {
           key: file.filename,
           originalFileName: file.originalname
         }).save();
+
+        transformationOptions.map(async ({ name, width }) => {
+          try {
+            const keyOnly = file.path.split("\\")[1];
+            console.log(`Image Resizing: ${keyOnly}`);
+            const newKey = `${name}/${keyOnly}`
+            await sharp(file.path)
+              .rotate()
+              .resize({ width, height: width, fit: "outside" })
+              .toFile(`./uploads/${newKey}`);
+          } catch (err) {
+            throw err;
+          }
+        });
         return image
       })
     );
