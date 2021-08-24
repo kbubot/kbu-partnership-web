@@ -13,6 +13,7 @@ const UploadForm = _ => {
   const [percent, setPercent] = useState([]);
   const [isPublic, setIsPublic] = useState(true);
   const inputRef = useRef();
+  const [isLoading, setIsLoading] = useState(false);
 
   const imageSelectHandler = async (e) => {
     /**
@@ -42,6 +43,7 @@ const UploadForm = _ => {
   const onSubmitV2 = async e => {
     e.preventDefault();
     try {
+      setIsLoading(true);
       const presignedData = await axios.post('/images/presigned', {
         contentTypes: [...files].map(file => file.type)
       });
@@ -72,49 +74,20 @@ const UploadForm = _ => {
       });
       if (isPublic)
         setImages(prevData => [...res.data, ...prevData]);
-      setMyImages(prevData => [...res.data, ...prevData]);
+      else
+        setMyImages(prevData => [...res.data, ...prevData]);
       toast.success("이미지 업로드 성공!");
       setTimeout(() => {
         setPercent([]);
         setPreviews([]);
+        setIsLoading(false);
         inputRef.current.value = null;
       }, 3000);
     } catch (err) {
       toast.error(err.response.data.message);
       setPercent([]);
       setPreviews([]);
-      console.error(err);
-    }
-  }
-  const onSubmit = async e => {
-    /**
-     * TODO: 텍스트 자료도 같이 보내줘야함.
-     */
-    e.preventDefault();
-    const formData = new FormData();
-    for (let file of files)
-      formData.append("image", file);
-    formData.append("public", isPublic);
-    try {
-      const res = await axios.post("/images", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: e => {
-          setPercent(Math.round(100 * e.loaded / e.total));
-        },
-      });
-      if (isPublic)
-        setImages(prevData => [...res.data, ...prevData]);
-      setMyImages(prevData => [...res.data, ...prevData]);
-      toast.success("이미지 업로드 성공!");
-      setTimeout(() => {
-        setPercent(0);
-        setPreviews([]);
-        inputRef.current.value = null;
-      }, 3000);
-    } catch (err) {
-      toast.error(err.response.data.message);
-      setPercent(0);
-      setPreviews([]);
+      setIsLoading(false);
       console.error(err);
     }
   }
@@ -159,7 +132,12 @@ const UploadForm = _ => {
         onChange={_ => { setIsPublic(!isPublic) }}
       />
       <label htmlFor="public-check">비공개</label>
-      <button type="submit">제출</button>
+      <button
+        type="submit"
+        disabled={isLoading}
+      >
+        제출
+      </button>
     </form>
   )
 }
