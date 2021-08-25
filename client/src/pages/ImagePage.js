@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { ImageContext } from '../context/ImageContext';
 import { AuthContext } from '../context/AuthContext';
+import InfoForm from '../components/InfoForm';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -39,6 +40,7 @@ const ImagePage = () => {
     if (me && image && image.likes.includes(me.userId))
       setHasLiked(true);
   }, [me, image])
+
   if (error)
     return <h3>Error...</h3>
   else if (!image)
@@ -75,7 +77,7 @@ const ImagePage = () => {
   };
   return (
     /**
-     * TODO: private일때 새로고침하면 권한이 없다는 이슈
+     * private일때 새로고침하면 권한이 없다는 이슈
      * default header sessionid set이 늦어서그런것인가
      */
     <div>
@@ -83,7 +85,7 @@ const ImagePage = () => {
       <img
         style={{ width: "100%" }}
         alt={imageId}
-        src={`http://localhost:5000/uploads/raw/${image.key}`}
+        src={`http://localhost:5000/uploads/w600/${image.key}`}
       />
       <span>좋아요 {image.likes.length}</span>
       {me && image.user._id === me.userId &&
@@ -100,6 +102,7 @@ const ImagePage = () => {
       >
         {hasLiked ? "좋아요 취소" : "좋아요"}
       </button>
+      <InfoForm/>
     </div >
   );
 };
