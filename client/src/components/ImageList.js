@@ -2,6 +2,7 @@ import React, { useContext, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { ImageContext } from '../context/ImageContext';
+import Image from './Image';
 import './ImageList.css';
 
 const ImageList = () => {
@@ -40,10 +41,7 @@ const ImageList = () => {
     to={`/images/${image._id}`}
     ref={index + 1 === images.length ? elementRef : undefined}
   >
-    <img
-      alt=""
-      src={`http://localhost:5000/uploads/raw/${image.key}`}
-    />
+    <Image imageUrl={`http://localhost:5000/uploads/w140/${image.key}`}/>
   </Link>));
   return (
     <div>
