@@ -1,13 +1,27 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+
+import { Button, Divider } from '@material-ui/core';
+import { makeStyles, ThemeProvider, unstable_createMuiStrictModeTheme } from '@material-ui/core/styles';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import DeleteIcon from '@material-ui/icons/Delete';
+
 import { ImageContext } from '../context/ImageContext';
 import { AuthContext } from '../context/AuthContext';
 import InfoForm from '../components/InfoForm';
-import axios from 'axios';
-import { toast } from 'react-toastify';
 
+
+const theme = unstable_createMuiStrictModeTheme();
+
+const useStyles = makeStyles((theme) => ({
+  divider: { margin: theme.spacing(2, 0) },
+}));
 
 const ImagePage = () => {
+  const classes = useStyles();
   const history = useHistory();
   const { imageId } = useParams();
   const { images, setImages, setMyImages } = useContext(ImageContext);
@@ -77,32 +91,47 @@ const ImagePage = () => {
   };
   return (
     /**
-     * private일때 새로고침하면 권한이 없다는 이슈
-     * default header sessionid set이 늦어서그런것인가
+     * private일때 새로고침하면 권한이 없다는 이슈 default header sessionid set이 늦어서그런것인가
      */
     <div>
       <h3>이미지: {imageId}</h3>
       <img
-        style={{ width: "100%" }}
+        style={{ maxWidth: 350, display: 'block', margin: 'auto' }}
         alt={imageId}
         src={`http://localhost:5000/uploads/w600/${image.key}`}
       />
-      <span>좋아요 {image.likes.length}</span>
-      {me && image.user._id === me.userId &&
-        <button
-          style={{ float: "right", marginLeft: 10 }}
-          onClick={deleteHandler}
-        >
-          삭제
-        </button>
-      }
-      <button
-        style={{ float: "right" }}
-        onClick={onSubmit}
+      <div
+        style={{ maxWidth: 350, margin: 'auto', marginBottom: 20 }}
       >
-        {hasLiked ? "좋아요 취소" : "좋아요"}
-      </button>
-      <InfoForm/>
+        <span>좋아요 {image.likes.length}</span>
+        {me && image.user._id === me.userId 
+          && 
+          <>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small" 
+              style={{ float: "right", marginLeft: 10 }}
+              onClick={deleteHandler}
+            >
+              <DeleteIcon />
+            </Button> 
+            <Button
+              variant="contained"
+              color="primary"
+              size="small" 
+              style={{float: "right"}}
+              onClick={onSubmit}
+            >
+              {hasLiked ? <FavoriteIcon/> : <FavoriteBorderIcon/>}
+            </Button>
+          </>
+        }
+      </div>
+      <Divider className={classes.divider} />
+      <ThemeProvider theme={theme}>
+        <InfoForm />
+      </ThemeProvider>
     </div >
   );
 };
