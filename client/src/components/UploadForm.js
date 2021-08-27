@@ -12,13 +12,10 @@ const UploadForm = _ => {
   const [previews, setPreviews] = useState([]);
   const [percent, setPercent] = useState(0);
   const [isPublic, setIsPublic] = useState(true);
-  const inputRef = useRef();
-  const [isLoading, setIsLoading] = useState(false);
+  const inputRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const imageSelectHandler = async (e) => {
-    /**
-     * TODO: 이미지가 선택되지 않았는데 제출을 눌렀을 경우 에러 처리해야함
-     */
     const imageFiles = e.target.files;
     setFiles(imageFiles);
 
@@ -39,11 +36,10 @@ const UploadForm = _ => {
       })
     );
     setPreviews(imagePreviews);
+    setIsLoading(false);
   };
+
   const onSubmit = async e => {
-    /**
-     * TODO: 텍스트 자료도 같이 보내줘야함.
-     */
     e.preventDefault();
     setIsLoading(true);
     const formData = new FormData();
@@ -66,7 +62,7 @@ const UploadForm = _ => {
         setPercent(0);
         setPreviews([]);
         setIsLoading(false);
-        inputRef.current.value = null;
+        inputRef.current = null;
       }, 3000);
     } catch (err) {
       toast.error(err.response.data.message);
@@ -121,7 +117,7 @@ const UploadForm = _ => {
       >
         제출
       </button>
-    </form>
+    </form >
   )
 }
 

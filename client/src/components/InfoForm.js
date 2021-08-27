@@ -11,20 +11,20 @@ import { AuthContext } from '../context/AuthContext';
 
 
 const categoryOptions = [
-    { value: '음식', label: '음식' },
-    { value: '생활', label: '생활' },
-    { value: '여가', label: '여가' }
-  ];
+  { value: '음식', label: '음식' },
+  { value: '생활', label: '생활' },
+  { value: '여가', label: '여가' }
+];
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: 350,
     margin: 'auto',
     "& > :last-child": { margin: 0 },
-    '& > *':{ margin: theme.spacing(0, 0, 2, 0)}
+    '& > *': { margin: theme.spacing(0, 0, 2, 0) }
   },
-  name:{ width: '60%' },
-  category:{ width: '40%' }
+  name: { width: '60%' },
+  category: { width: '40%' }
 }));
 
 const InfoForm = _ => {
@@ -41,9 +41,6 @@ const InfoForm = _ => {
   const { imageId } = useParams();
 
   useEffect(() => {
-    /** 
-    * db에서 불러온게 없을시 에러처리 할 수 없나?
-    */
     axios.get(`/partner/${imageId}`)
       .then(({ data }) => {
         setName(data.name);
@@ -94,14 +91,14 @@ const InfoForm = _ => {
         ))}
       </TextField>
       <TextField
-          label="업체혜택"
-          multiline
-          fullWidth
-          rows={3}
-          variant="outlined"
-          value={benefit}
-          onChange={e => setBenefit(e.value)}
-        />
+        label="업체혜택"
+        multiline
+        fullWidth
+        rows={3}
+        variant="outlined"
+        value={benefit}
+        onChange={e => setBenefit(e.target.value)}
+      />
       <Grid container spacing={1}>
         <Grid item xs={6}>
           <TextField
@@ -118,7 +115,7 @@ const InfoForm = _ => {
           />
         </Grid>
       </Grid>
-      {me && 
+      {me &&
         <Button
           variant="contained"
           color="primary"
