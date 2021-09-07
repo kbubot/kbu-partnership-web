@@ -7,11 +7,13 @@ import { Button, Divider } from '@material-ui/core';
 import { makeStyles, ThemeProvider, unstable_createMuiStrictModeTheme } from '@material-ui/core/styles';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import DeleteIcon from '@material-ui/icons/Delete';
 
 import { ImageContext } from '../context/ImageContext';
 import { AuthContext } from '../context/AuthContext';
 import InfoForm from '../components/InfoForm';
+import UploadForm from '../components/UploadForm';
 
 
 const theme = unstable_createMuiStrictModeTheme();
@@ -27,6 +29,7 @@ const ImagePage = () => {
   const { images, setImages, setMyImages } = useContext(ImageContext);
   const [me] = useContext(AuthContext);
   const [hasLiked, setHasLiked] = useState(false);
+  const [hasEdit, setHasEdit] = useState(false);
   const [image, setImage] = useState();
   const [error, setError] = useState(false);
 
@@ -95,35 +98,51 @@ const ImagePage = () => {
      */
     <div>
       <h3>이미지: {imageId}</h3>
-      <img
-        style={{ maxWidth: 350, display: 'block', margin: 'auto' }}
-        alt={imageId}
-        src={`http://localhost:5000/uploads/w600/${image.key}`}
-      />
       <div
-        style={{ maxWidth: 350, margin: 'auto', marginBottom: 20 }}
+        style={{ maxWidth: 350, margin: 'auto' }}
+      >
+        {hasEdit ? <UploadForm />
+          :
+          <img
+            style={{ width: '100%', objectFit: 'cover' }}
+            alt={imageId}
+            src={`http://localhost:5000/uploads/w600/${image.key}`}
+          />
+        }
+      </div>
+      <div
+        style={{ maxWidth: 350, margin: '20px auto'}}
       >
         <span>좋아요 {image.likes.length}</span>
-        {me && image.user._id === me.userId 
-          && 
+        {me && image.user._id === me.userId
+          &&
           <>
             <Button
               variant="contained"
               color="secondary"
-              size="small" 
+              size="small"
               style={{ float: "right", marginLeft: 10 }}
               onClick={deleteHandler}
             >
               <DeleteIcon />
-            </Button> 
+            </Button>
             <Button
               variant="contained"
               color="primary"
-              size="small" 
-              style={{float: "right"}}
+              size="small"
+              style={{ float: "right", marginLeft: 10 }}
               onClick={onSubmit}
             >
-              {hasLiked ? <FavoriteIcon/> : <FavoriteBorderIcon/>}
+              {hasLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            </Button>
+            <Button
+              variant="contained"
+              color="default"
+              size="small"
+              style={{ float: "right" }}
+              onClick={_ => { setHasEdit(!hasEdit) }}
+            >
+              <CloudUploadIcon />
             </Button>
           </>
         }

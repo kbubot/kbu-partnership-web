@@ -113,6 +113,35 @@ imageRouter.delete("/:imageId", async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+imageRouter.put("/:prevImageId", upload.single('image'), async (req, res) => {
+  try {
+    if (!req.user)
+      throw new Error("권한이 없습니다.");
+    const { prevImageId } = req.params;
+    const prevImage = await Image.findOneAndUpdate(
+      { _id: prevImageId },
+      { $set: { 'key': file.filename }},
+    );
+    transformationOptions.map(async ({ name, width }) => {
+      const keyOnly = file.path.split("\\")[2];
+      const newKey = `${name}/${keyOnly}`;
+      await sharp(file.path)
+        .rotate()
+        .resize({ width, height: width, fit: "outside" })
+        .toFile(`./uploads/${newKey}`);
+    });
+    await Promise.all(
+      [
+        `./uploads/raw/${prevImage.key}`,
+        `./uploads/w140/${prevImage.key}`,
+        `./uploads/raw/${prevImage.key}`
+      ].map(async path => await fileUnlink(path))
+    )
+    res.json(image);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 imageRouter.patch("/:imageId/like", async (req, res) => {
   try {
     if (!req.user)
