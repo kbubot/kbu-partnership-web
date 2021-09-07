@@ -1,12 +1,13 @@
 const { Router } = require("express");
-const imageRouter = Router();
-const Image = require('../models/Image');
-const upload = require('../middleware/imageUpload');
+const mongoose = require('mongoose');
 const fs = require("fs");
 const { promisify } = require("util");
-const mongoose = require('mongoose');
+
+const Image = require('../models/Image');
+const upload = require('../middleware/imageUpload');
 const sharp = require('sharp');
 
+const imageRouter = Router();
 const fileUnlink = promisify(fs.unlink);
 
 const transformationOptions = [
@@ -14,7 +15,7 @@ const transformationOptions = [
   { name: 'w600', width: 600 },
 ]
 
-imageRouter.post('/', upload.array("image", 5), async (req, res) => {
+imageRouter.post('/', upload.array("image"), async (req, res) => {
   try {
     if (!req.user)
       throw new Error("권한이 없습니다.");
@@ -33,9 +34,8 @@ imageRouter.post('/', upload.array("image", 5), async (req, res) => {
 
         transformationOptions.map(async ({ name, width }) => {
           try {
-            const keyOnly = file.path.split("\\")[1];
-            console.log(`Image Resizing: ${keyOnly}`);
-            const newKey = `${name}/${keyOnly}`
+            const keyOnly = file.path.split("\\")[2];
+            const newKey = `${name}/${keyOnly}`;
             await sharp(file.path)
               .rotate()
               .resize({ width, height: width, fit: "outside" })
@@ -71,6 +71,9 @@ imageRouter.get("/", async (req, res) => {
   }
 });
 imageRouter.get("/:imageId", async (req, res) => {
+  /**
+   * private으로 이미지 업로드 뒤 이미지페이지 갈시 권한이 없는 에러
+   */
   try {
     const { imageId } = req.params;
     if (!mongoose.isValidObjectId(imageId))
@@ -79,7 +82,9 @@ imageRouter.get("/:imageId", async (req, res) => {
     if (!image)
       throw new Error("해당 이미지는 존재 하지 않습니다.");
     if (!image.public
-      && (!req.user || req.user.id.toString() !== image.user._id.toString()))
+      && !req.user
+      && req.user.id !== image.user._id.toString()
+    )
       throw new Error("권한이 없습니다.");
     res.json(image);
   } catch (err) {
@@ -96,7 +101,13 @@ imageRouter.delete("/:imageId", async (req, res) => {
     const image = await Image.findOneAndDelete({ _id: req.params.imageId });
     if (!image)
       return res.json({ message: "요청하신 이미지는 이미 삭제되었습니다." });
-    await fileUnlink(`./uploads/${image.key}`);
+    await Promise.all(
+      [
+        `./uploads/raw/${image.key}`,
+        `./uploads/w140/${image.key}`,
+        `./uploads/raw/${image.key}`
+      ].map(async path => await fileUnlink(path))
+    )
     res.json({ message: "요청하신 이미지가 삭제되었습니다.", image });
   } catch (err) {
     res.status(400).json({ message: err.message });
