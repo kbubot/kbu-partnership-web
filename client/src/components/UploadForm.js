@@ -65,11 +65,11 @@ const UploadForm = ({ prevImageId }) => {
       if (isPublic)
         setImages(prevData =>
           prevImageId
-            ? [...res.data, ...prevData.filter(image => image._id !== prevImageId)]
-            : [...res.data, ...prevData]
+            ? { ...prevData, ...res.data }
+            : { ...res.data, ...prevData }
         );
       else
-        setMyImages(prevData => [...res.data, ...prevData]);
+        setMyImages(prevData => ({ ...res.data, ...prevData }));
       toast.success("이미지 업로드 성공!");
 
       setTimeout(() => {

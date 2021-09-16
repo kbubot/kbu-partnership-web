@@ -34,7 +34,7 @@ const ImagePage = () => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const image = images.find(image => image._id === imageId);
+    const image = images[imageId];
     if (image)
       setImage(image);
   }, [images, imageId])
@@ -44,7 +44,7 @@ const ImagePage = () => {
       return;
     axios.get(`/images/${imageId}`)
       .then(({ data }) => {
-        setImage(data);
+        setImage(data[imageId]);
         setError(false);
       })
       .catch(err => {
@@ -101,7 +101,7 @@ const ImagePage = () => {
       <div
         style={{ maxWidth: 350, margin: 'auto' }}
       >
-        {hasEdit ? <UploadForm />
+        {hasEdit ? me && <UploadForm prevImageId={imageId} />
           :
           <img
             style={{ width: '100%', objectFit: 'cover' }}
@@ -111,7 +111,7 @@ const ImagePage = () => {
         }
       </div>
       <div
-        style={{ maxWidth: 350, margin: '20px auto'}}
+        style={{ maxWidth: 350, margin: '20px auto' }}
       >
         <span>좋아요 {image.likes.length}</span>
         {me && image.user._id === me.userId

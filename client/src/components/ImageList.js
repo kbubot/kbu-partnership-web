@@ -35,14 +35,16 @@ const ImageList = () => {
     return () => observer.disconnect();
   }, [loaderMoreImages]);
 
-  const imgTagList = images.map((image, index) =>
-  (<Link
-    key={image.key}
-    to={`/images/${image._id}`}
-    ref={index + 1 === images.length ? elementRef : undefined}
-  >
-    <Image imageUrl={`http://localhost:5000/uploads/w140/${image.key}`}/>
-  </Link>));
+  const imgTagList = [];
+  Object.values(images).forEach((image, index) => {
+    imgTagList.push((<Link
+      key={image.key}
+      to={`/images/${image._id}`}
+      ref={index + 1 === images.length ? elementRef : undefined}
+    >
+      <Image imageUrl={`http://localhost:5000/uploads/w140/${image.key}`} />
+    </Link>));
+  })
   return (
     <div>
       <h3

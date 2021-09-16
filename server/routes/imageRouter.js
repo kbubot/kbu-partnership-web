@@ -47,7 +47,9 @@ imageRouter.post('/', upload.array("image"), async (req, res) => {
         return image
       })
     );
-    res.json(images);
+    const result = {};
+    images.forEach(image => result[image.id] = image);
+    res.json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -65,7 +67,9 @@ imageRouter.get("/", async (req, res) => {
         } :
         { public: true, }
     ).sort({ _id: -1 }).limit(8);
-    res.json(images);
+    const result = {};
+    images.forEach(image => result[image.id] = image);
+    res.json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -86,7 +90,9 @@ imageRouter.get("/:imageId", async (req, res) => {
       && req.user.id !== image.user._id.toString()
     )
       throw new Error("권한이 없습니다.");
-    res.json(image);
+    const result = {}
+    result[image._id] = image;
+    res.json(result);
   } catch (err) {
     console.log(err);
     res.status(400).json({ message: err.message });
@@ -136,15 +142,18 @@ imageRouter.put("/:prevImageId", upload.single('image'), async (req, res) => {
         .resize({ width, height: width, fit: "outside" })
         .toFile(`./uploads/${newKey}`);
     });
-    
+
     [
       `./uploads/raw/${prevImage.key}`,
       `./uploads/w140/${prevImage.key}`,
       `./uploads/w600/${prevImage.key}`
     ].map(path => fs.unlinkSync(path));
-
     prevImage.key = keyOnly;
-    res.json([prevImage]);
+    prevImage.originalFileName = req.file.originalname;
+    
+    const result = {}
+    result[prevImage._id] = prevImage;
+    res.json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

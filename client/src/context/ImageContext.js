@@ -4,8 +4,8 @@ import { AuthContext } from '../context/AuthContext';
 
 export const ImageContext = createContext();
 export const ImageProvider = (prop) => {
-  const [images, setImages] = useState([]);
-  const [myImages, setMyImages] = useState([]);
+  const [images, setImages] = useState({});
+  const [myImages, setMyImages] = useState({});
   const [isPublic, setIsPublic] = useState(false);
   const [imageUrl, setImageUrl] = useState("/images");
   const [imageLoading, setImageLoading] = useState(false);
@@ -20,8 +20,8 @@ export const ImageProvider = (prop) => {
     axios.get(imageUrl)
       .then(result =>
         isPublic
-          ? setImages(prevData => [...prevData, ...result.data])
-          : setMyImages(prevData => [...prevData, ...result.data])
+        ? setImages(prevData => ({ ...result.data, ...prevData }))
+        : setMyImages(prevData => ({ ...result.data, ...prevData }))
       )
       .catch(err => setImageError(err))
       .finally(_ => {
@@ -37,7 +37,7 @@ export const ImageProvider = (prop) => {
           .catch(err => console.log(err));
       }, 0)
     } else {
-      setMyImages([]);
+      setMyImages({});
       setIsPublic(true);
     }
   }, [me]);
