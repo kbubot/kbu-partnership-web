@@ -1,13 +1,18 @@
 import React, { useState, useContext, useRef } from 'react';
-import axios from 'axios';
+import { useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axios from 'axios';
+
 import 'react-toastify/dist/ReactToastify.css';
 import './UploadForm.css'
-import ProgressBar from './ProgressBar';
-import { ImageContext } from '../context/ImageContext';
 
-const UploadForm = _ => {
+import { ImageContext } from '../context/ImageContext';
+import ProgressBar from './ProgressBar';
+
+
+const UploadForm = ({ prevImageId }) => {
   const { setImages, setMyImages } = useContext(ImageContext);
+  const history = useHistory();
   const [files, setFiles] = useState(null);
   const [previews, setPreviews] = useState([]);
   const [percent, setPercent] = useState(0);
@@ -42,34 +47,44 @@ const UploadForm = _ => {
   const onSubmit = async e => {
     e.preventDefault();
     setIsLoading(true);
+
     const formData = new FormData();
     for (let file of files)
       formData.append("image", file);
     formData.append("public", isPublic);
+
     try {
-      const res = await axios.post("/images", formData, {
+      const res = await axios({
+        url: prevImageId ? `/images/${prevImageId}` : `/images`,
+        method: prevImageId ? 'put' : 'post',
+        data: formData,
         headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: e => {
-          setPercent(Math.round(100 * e.loaded / e.total));
-        },
+        onUploadProgress: e => setPercent(Math.round(100 * e.loaded / e.total))
       });
+
       if (isPublic)
-        setImages(prevData => [...res.data, ...prevData]);
+        setImages(prevData =>
+          prevImageId
+            ? [...res.data, ...prevData.filter(image => image._id !== prevImageId)]
+            : [...res.data, ...prevData]
+        );
       else
         setMyImages(prevData => [...res.data, ...prevData]);
       toast.success("이미지 업로드 성공!");
+
       setTimeout(() => {
         setPercent(0);
         setPreviews([]);
         setIsLoading(false);
         inputRef.current = null;
-      }, 3000);
+        if (prevImageId) history.push("/");
+      }, 2000);
     } catch (err) {
+      console.error(err);
       toast.error(err.response.data.message);
       setPercent(0);
       setPreviews([]);
       setIsLoading(false);
-      console.error(err);
     }
   }
   const previewImages = previews.map((preview, index) => (

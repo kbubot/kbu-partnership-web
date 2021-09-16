@@ -105,7 +105,7 @@ imageRouter.delete("/:imageId", async (req, res) => {
       [
         `./uploads/raw/${image.key}`,
         `./uploads/w140/${image.key}`,
-        `./uploads/raw/${image.key}`
+        `./uploads/w600/${image.key}`
       ].map(async path => await fileUnlink(path))
     )
     res.json({ message: "요청하신 이미지가 삭제되었습니다.", image });
@@ -118,26 +118,33 @@ imageRouter.put("/:prevImageId", upload.single('image'), async (req, res) => {
     if (!req.user)
       throw new Error("권한이 없습니다.");
     const { prevImageId } = req.params;
-    const prevImage = await Image.findOneAndUpdate(
+    let prevImage = await Image.findOneAndUpdate(
       { _id: prevImageId },
-      { $set: { 'key': file.filename }},
+      {
+        $set: {
+          'key': req.file.filename,
+          'originalFileName': req.file.originalname
+        }
+      }
     );
+    let keyOnly = ""
     transformationOptions.map(async ({ name, width }) => {
-      const keyOnly = file.path.split("\\")[2];
+      keyOnly = req.file.path.split("\\")[2];
       const newKey = `${name}/${keyOnly}`;
-      await sharp(file.path)
+      await sharp(req.file.path)
         .rotate()
         .resize({ width, height: width, fit: "outside" })
         .toFile(`./uploads/${newKey}`);
     });
-    await Promise.all(
-      [
-        `./uploads/raw/${prevImage.key}`,
-        `./uploads/w140/${prevImage.key}`,
-        `./uploads/raw/${prevImage.key}`
-      ].map(async path => await fileUnlink(path))
-    )
-    res.json(image);
+    
+    [
+      `./uploads/raw/${prevImage.key}`,
+      `./uploads/w140/${prevImage.key}`,
+      `./uploads/w600/${prevImage.key}`
+    ].map(path => fs.unlinkSync(path));
+
+    prevImage.key = keyOnly;
+    res.json([prevImage]);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
