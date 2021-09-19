@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from "axios";
 
 import { Paper, InputBase, IconButton } from "@material-ui/core";
@@ -27,25 +27,32 @@ const useStyles = makeStyles((theme) => ({
 
 const SearchBar = () => {
   const classes = useStyles();
-  // const { setImages, setMyImages } = useContext(ImageContext);
+  const { setImages, setImageLoading } = useContext(ImageContext);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
-  const onChange = async e => {
 
-  };
-  const onSubmit = async e => {
+const onSubmit = async e => {
+  e.preventDefault();
+  await axios.get(`/partner/search/${searchKeyword}`)
+    .then(({ data }) => {
+      setImages({ ...data });
+      setImageLoading(true);
+    });
+};
 
-  };
-
-  return (
-    <div>
-      <Paper component="form" className={classes.paper} onSubmit={onSubmit}>
-        <InputBase className={classes.input} onChange={onChange} />
-        <IconButton type="submit">
-          <SearchIcon />
-        </IconButton>
-      </Paper>
-    </div>
-  );
+return (
+  <div>
+    <Paper component="form" className={classes.paper} onSubmit={onSubmit}>
+      <InputBase
+        className={classes.input}
+        onChange={e => setSearchKeyword(e.target.value)}
+      />
+      <IconButton type="submit">
+        <SearchIcon />
+      </IconButton>
+    </Paper>
+  </div>
+);
 };
 
 export default SearchBar;

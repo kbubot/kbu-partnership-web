@@ -20,8 +20,8 @@ export const ImageProvider = (prop) => {
     axios.get(imageUrl)
       .then(result =>
         isPublic
-        ? setImages(prevData => ({ ...result.data, ...prevData }))
-        : setMyImages(prevData => ({ ...result.data, ...prevData }))
+          ? setImages(prevData => ({ ...prevData, ...result.data }))
+          : setMyImages(prevData => ({ ...result.data, ...prevData }))
       )
       .catch(err => setImageError(err))
       .finally(_ => {
@@ -29,7 +29,7 @@ export const ImageProvider = (prop) => {
         pastImageUrl.current = imageUrl;
       });
   }, [imageUrl, isPublic]);
-  useEffect(() => {
+  useEffect(_ => {
     if (me) {
       setTimeout(_ => {
         axios.get("/users/me/images")
@@ -52,6 +52,7 @@ export const ImageProvider = (prop) => {
         setIsPublic,
         setImageUrl,
         imageLoading,
+        setImageLoading,
         imageError
       }}>
       {prop.children}

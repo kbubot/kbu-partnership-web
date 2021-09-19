@@ -1,0 +1,35 @@
+PUT partners/_mapping
+{
+  "properties" : {
+    "benefit" : {
+        "type" : "text",
+        "fields" : {
+          "nori": {
+            "type": "text",
+            "analyzer": "my_custom_analyzer"
+          }
+        }
+      },
+    "category" : {
+      "type" : "keyword"
+    },
+    "imageId" : {
+      "type" : "keyword"
+    },
+    "latitude" : {
+      "type" : "float"
+    },
+    "longitude" : {
+      "type" : "float"
+    },
+    "name" : {
+      "type" : "text",
+      "fields" : {
+        "keyword" : {
+          "type" : "keyword",
+          "ignore_above" : 256
+        }
+      }
+    }
+  }
+}
