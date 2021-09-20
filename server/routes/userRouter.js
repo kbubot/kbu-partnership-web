@@ -77,30 +77,5 @@ userRouter.get("/me", (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
-userRouter.get("/me/images", async (req, res) => {
-  try {
-    const { lastid } = req.query;
-    if (lastid && !mongoose.isValidObjectId(lastid))
-      throw new Error("invalid lastid");
-    if (!req.user)
-      throw new Error("권한이 없습니다.");
-    const images = await Image.find(
-      lastid
-        ? {
-          "user._id": req.user.id,
-          _id: { $lt: lastid },
-          public: false
-        }
-        : {
-          "user._id": req.user.id,
-          public: false
-        })
-      .sort({ _id: -1 })
-      .limit(4);
-    res.json(images);
-  } catch (err) {
-    res.status(400, { message: err.message });
-  }
-});
 
 module.exports = { userRouter };

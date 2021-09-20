@@ -1,7 +1,8 @@
 import React, { useContext, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+
 import { ImageContext } from '../context/ImageContext';
+
 import Image from './Image';
 import './ImageList.css';
 
@@ -15,7 +16,6 @@ const ImageList = () => {
     imageError,
     imageLoadLock
   } = useContext(ImageContext);
-  const [me] = useContext(AuthContext);
   const elementRef = useRef(null);
 
   const lastImageId = Object.keys(images).length > 0
@@ -25,8 +25,8 @@ const ImageList = () => {
   const loaderMoreImages = useCallback(() => {
     if (imageLoadLock || imageLoading || !lastImageId)
       return;
-    setImageUrl(`${isPublic ? "" : "users/me"}/images?lastid=${lastImageId}`);
-  }, [lastImageId, imageLoading, imageLoadLock, isPublic, setImageUrl]);
+    setImageUrl(`/images?ispublic=${isPublic}&lastid=${lastImageId}`);
+  }, [lastImageId, imageLoading, isPublic, imageLoadLock, setImageUrl]);
 
   useEffect(() => {
     if (!elementRef.current) return;
@@ -53,12 +53,14 @@ const ImageList = () => {
       <h3
         style={{ display: "inline-block", marginRight: 10 }}
       >
-        제휴업체 ({isPublic ? "공개" : "개인"})사진
+        {isPublic ? "2021" : "한시적 운영"} 제휴업체 사진
       </h3>
-      {me &&
-        <button onClick={() => setIsPublic(!isPublic)}>
-          {(isPublic ? "개인" : "공개") + " 사진 보기"}
-        </button>}
+      <button onClick={() => {
+        setIsPublic(!isPublic);
+        setImageUrl(`/images?ispublic=${!isPublic}`);
+      }}>
+        {(!isPublic ? "고정 운영" : "한시적 운영") + " 업체 보기"}
+      </button>
       <div className="image-list-container">
         {imgTagList}
       </div>

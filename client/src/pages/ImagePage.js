@@ -26,7 +26,7 @@ const ImagePage = () => {
   const classes = useStyles();
   const history = useHistory();
   const { imageId } = useParams();
-  const { images, setImages, setMyImages } = useContext(ImageContext);
+  const { images, setImages, setTempImages } = useContext(ImageContext);
   const [me] = useContext(AuthContext);
   const [hasLiked, setHasLiked] = useState(false);
   const [hasEdit, setHasEdit] = useState(false);
@@ -63,30 +63,26 @@ const ImagePage = () => {
   else if (!image)
     return <h3>Loading...</h3>
 
-  const updateImage = (images, image) => [
-    ...images.filter(image => image._id !== imageId),
-    image
-  ].sort((a, b) => {
-    if (a._id < b._id) return 1;
-    else return -1;
-  });
+  const updateImage = (prevImages, updateImage) => ({ ...prevImages, ...updateImage });
+
   const onSubmit = async () => {
-    const result = await axios.patch(
+    const { data } = await axios.patch(
       `/images/${imageId}/${hasLiked ? "unlike" : "like"}`
     );
-    if (result.data.public)
-      setImages(prevData => updateImage(prevData, result.data));
-    setMyImages(prevData => updateImage(prevData, result.data));
+    if (data[imageId].public)
+      setImages(prevData => updateImage(prevData, data));
+    else
+      setTempImages(prevData => updateImage(prevData, data));
     setHasLiked(!hasLiked);
   };
   const deleteHandler = async () => {
     try {
       if (!window.confirm("정말 해당 이미지를 삭제하시겠습니까?"))
         return;
-      const result = await axios.delete(`/images/${imageId}`)
-      toast.success(result.data.message);
-      setImages(prevData => prevData.filter((image) => image._id !== imageId));
-      setMyImages(prevData => prevData.filter((image) => image._id !== imageId));
+      const { data } = await axios.delete(`/images/${imageId}`)
+      toast.success(data.message);
+      setImages(prevData => ({...prevData, ...data}));
+      setTempImages(prevData => ({...prevData, ...data}));
       history.push("/");
     } catch (err) {
       toast.error(err.message);

@@ -56,17 +56,17 @@ imageRouter.post('/', upload.array("image"), async (req, res) => {
 });
 imageRouter.get("/", async (req, res) => {
   try {
-    const { lastid } = req.query;
+    const { lastid, ispublic } = req.query;
     if (lastid && !mongoose.isValidObjectId(lastid))
       throw new Error("invalid lastid");
     const images = await Image.find(
       lastid ?
         {
-          public: true,
-          _id: { $lt: lastid }
+          public: ispublic,
+          _id: { $gt: lastid }
         } :
-        { public: true, }
-    ).sort({ _id: -1 }).limit(8);
+        { public: ispublic }
+    ).limit(8);
     const result = {};
     images.forEach(image => result[image.id] = image);
     res.json(result);
@@ -85,8 +85,7 @@ imageRouter.get("/:imageId", async (req, res) => {
     const image = await Image.findOne({ _id: imageId });
     if (!image)
       throw new Error("해당 이미지는 존재 하지 않습니다.");
-    if (!image.public
-      && !req.user
+    if (!req.user
       && req.user.id !== image.user._id.toString()
     )
       throw new Error("권한이 없습니다.");
@@ -114,7 +113,9 @@ imageRouter.delete("/:imageId", async (req, res) => {
         `./uploads/w600/${image.key}`
       ].map(async path => await fileUnlink(path))
     )
-    res.json({ message: "요청하신 이미지가 삭제되었습니다.", image });
+    const result = {}
+    result[image._id] = image;
+    res.json({ message: "요청하신 이미지가 삭제되었습니다.", result });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -150,7 +151,7 @@ imageRouter.put("/:prevImageId", upload.single('image'), async (req, res) => {
     ].map(path => fs.unlinkSync(path));
     prevImage.key = keyOnly;
     prevImage.originalFileName = req.file.originalname;
-    
+
     const result = {}
     result[prevImage._id] = prevImage;
     res.json(result);
@@ -169,7 +170,9 @@ imageRouter.patch("/:imageId/like", async (req, res) => {
       { $addToSet: { likes: req.user.id } },
       { new: true }
     );
-    res.json(image);
+    const result = {}
+    result[image._id] = image;
+    res.json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -185,7 +188,9 @@ imageRouter.patch("/:imageId/unlike", async (req, res) => {
       { $pull: { likes: req.user.id } },
       { new: true }
     );
-    res.json(image);
+    const result = {}
+    result[image._id] = image;
+    res.json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

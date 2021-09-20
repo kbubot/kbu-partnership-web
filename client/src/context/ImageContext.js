@@ -1,17 +1,15 @@
-import React, { createContext, useState, useEffect, useContext, useRef } from "react";
+import React, { createContext, useState, useEffect, useRef } from "react";
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
 
 export const ImageContext = createContext();
 export const ImageProvider = (prop) => {
   const [images, setImages] = useState({});
-  const [myImages, setMyImages] = useState({});
-  const [isPublic, setIsPublic] = useState(false);
-  const [imageUrl, setImageUrl] = useState("/images");
+  const [tempImages, setTempImages] = useState({});
+  const [isPublic, setIsPublic] = useState(true);
+  const [imageUrl, setImageUrl] = useState(`/images?ispublic=${isPublic}`);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoadLock, setImageLoadLock] = useState(false);
-  const [me] = useContext(AuthContext);
   const pastImageUrl = useRef();
 
   useEffect(() => {
@@ -22,7 +20,7 @@ export const ImageProvider = (prop) => {
       .then(result =>
         isPublic
           ? setImages(prevData => ({ ...prevData, ...result.data }))
-          : setMyImages(prevData => ({ ...result.data, ...prevData }))
+          : setTempImages(prevData => ({ ...prevData, ...result.data }))
       )
       .catch(err => setImageError(err))
       .finally(_ => {
@@ -30,25 +28,15 @@ export const ImageProvider = (prop) => {
         pastImageUrl.current = imageUrl;
       });
   }, [imageUrl, isPublic]);
-  useEffect(_ => {
-    if (me) {
-      setTimeout(_ => {
-        axios.get("/users/me/images")
-          .then(result => setMyImages(result.data))
-          .catch(err => console.log(err));
-      }, 0)
-    } else {
-      setMyImages({});
-      setIsPublic(true);
-    }
-  }, [me]);
+
+  console.log(imageUrl, isPublic);
 
   return (
     <ImageContext.Provider
       value={{
-        images: isPublic ? images : myImages,
+        images: isPublic ? images : tempImages,
         setImages,
-        setMyImages,
+        setTempImages,
         isPublic,
         setIsPublic,
         setImageUrl,
