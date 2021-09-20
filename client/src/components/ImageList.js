@@ -12,18 +12,21 @@ const ImageList = () => {
     setIsPublic,
     setImageUrl,
     imageLoading,
-    imageError
+    imageError,
+    imageLoadLock
   } = useContext(ImageContext);
   const [me] = useContext(AuthContext);
   const elementRef = useRef(null);
 
-  const lastImageId = images.length > 0 ? images[images.length - 1]._id : null;
+  const lastImageId = Object.keys(images).length > 0
+    ? Object.keys(images)[Object.keys(images).length - 1]
+    : null;
 
   const loaderMoreImages = useCallback(() => {
-    if (imageLoading || !lastImageId)
+    if (imageLoadLock || imageLoading || !lastImageId)
       return;
     setImageUrl(`${isPublic ? "" : "users/me"}/images?lastid=${lastImageId}`);
-  }, [lastImageId, imageLoading, isPublic, setImageUrl]);
+  }, [lastImageId, imageLoading, imageLoadLock, isPublic, setImageUrl]);
 
   useEffect(() => {
     if (!elementRef.current) return;
@@ -40,7 +43,7 @@ const ImageList = () => {
     imgTagList.push((<Link
       key={image.key}
       to={`/images/${image._id}`}
-      ref={index + 1 === images.length ? elementRef : undefined}
+      ref={index + 1 === Object.keys(images).length ? elementRef : undefined}
     >
       <Image imageUrl={`http://localhost:5000/uploads/w140/${image.key}`} />
     </Link>));

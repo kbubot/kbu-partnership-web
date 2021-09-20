@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import { toast } from 'react-toastify';
 import axios from "axios";
 
 import { Paper, InputBase, IconButton } from "@material-ui/core";
@@ -27,32 +28,41 @@ const useStyles = makeStyles((theme) => ({
 
 const SearchBar = () => {
   const classes = useStyles();
-  const { setImages, setImageLoading } = useContext(ImageContext);
+  const { setImages, setImageLoadLock } = useContext(ImageContext);
   const [searchKeyword, setSearchKeyword] = useState("");
 
 
-const onSubmit = async e => {
-  e.preventDefault();
-  await axios.get(`/partner/search/${searchKeyword}`)
-    .then(({ data }) => {
-      setImages({ ...data });
-      setImageLoading(true);
-    });
-};
+  const onSubmit = async e => {
+    e.preventDefault();
 
-return (
-  <div>
-    <Paper component="form" className={classes.paper} onSubmit={onSubmit}>
-      <InputBase
-        className={classes.input}
-        onChange={e => setSearchKeyword(e.target.value)}
-      />
-      <IconButton type="submit">
-        <SearchIcon />
-      </IconButton>
-    </Paper>
-  </div>
-);
+    await axios.get(
+      searchKeyword
+        ? `/partner/search/${searchKeyword}`
+        : `/images`
+    )
+      .then(({ data }) => {
+        if (searchKeyword)
+          setImageLoadLock(true);
+        else 
+          setImageLoadLock(false);
+        setImages({ ...data });
+      })
+      .catch(err => toast.error(err.response.data.message));
+  };
+
+  return (
+    <div>
+      <Paper component="form" className={classes.paper} onSubmit={onSubmit}>
+        <InputBase
+          className={classes.input}
+          onChange={e => setSearchKeyword(e.target.value)}
+        />
+        <IconButton type="submit">
+          <SearchIcon />
+        </IconButton>
+      </Paper>
+    </div>
+  );
 };
 
 export default SearchBar;

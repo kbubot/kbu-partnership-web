@@ -10,6 +10,7 @@ export const ImageProvider = (prop) => {
   const [imageUrl, setImageUrl] = useState("/images");
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [imageLoadLock, setImageLoadLock] = useState(false);
   const [me] = useContext(AuthContext);
   const pastImageUrl = useRef();
 
@@ -52,8 +53,9 @@ export const ImageProvider = (prop) => {
         setIsPublic,
         setImageUrl,
         imageLoading,
-        setImageLoading,
-        imageError
+        imageError,
+        imageLoadLock,
+        setImageLoadLock
       }}>
       {prop.children}
     </ImageContext.Provider>
