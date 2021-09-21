@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { toast } from 'react-toastify';
 import axios from "axios";
 
-import { Paper, InputBase, IconButton } from "@material-ui/core";
+import { Paper, IconButton, InputBase } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import SearchIcon from "@material-ui/icons/Search";
 
@@ -28,23 +28,23 @@ const useStyles = makeStyles((theme) => ({
 
 const SearchBar = () => {
   const classes = useStyles();
-  const { setImages, setImageLoadLock } = useContext(ImageContext);
+  const { setImages, setImageLoadLock, imageUrl, setImageUrl, isPublic } = useContext(ImageContext);
   const [searchKeyword, setSearchKeyword] = useState("");
-
 
   const onSubmit = async e => {
     e.preventDefault();
-
     await axios.get(
       searchKeyword
         ? `/partner/search/${searchKeyword}`
-        : `/images`
+        : imageUrl
     )
       .then(({ data }) => {
-        if (searchKeyword)
+        if (searchKeyword) {
           setImageLoadLock(true);
-        else 
+        } else {
           setImageLoadLock(false);
+          setImageUrl(`/images?ispublic=${isPublic}`)
+        }
         setImages({ ...data });
       })
       .catch(err => toast.error(err.response.data.message));
@@ -55,6 +55,7 @@ const SearchBar = () => {
       <Paper component="form" className={classes.paper} onSubmit={onSubmit}>
         <InputBase
           className={classes.input}
+          value={searchKeyword}
           onChange={e => setSearchKeyword(e.target.value)}
         />
         <IconButton type="submit">

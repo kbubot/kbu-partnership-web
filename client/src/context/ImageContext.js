@@ -15,6 +15,8 @@ export const ImageProvider = (prop) => {
   useEffect(() => {
     if (pastImageUrl.current === imageUrl)
       return;
+    if (imageLoadLock)
+      return;
     setImageLoading(true);
     axios.get(imageUrl)
       .then(result =>
@@ -27,9 +29,7 @@ export const ImageProvider = (prop) => {
         setImageLoading(false);
         pastImageUrl.current = imageUrl;
       });
-  }, [imageUrl, isPublic]);
-
-  console.log(imageUrl, isPublic);
+  }, [imageUrl, imageLoadLock, isPublic]);
 
   return (
     <ImageContext.Provider
@@ -39,6 +39,7 @@ export const ImageProvider = (prop) => {
         setTempImages,
         isPublic,
         setIsPublic,
+        imageUrl,
         setImageUrl,
         imageLoading,
         imageError,
