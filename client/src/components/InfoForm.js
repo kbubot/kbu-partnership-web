@@ -18,8 +18,6 @@ const categoryOptions = [
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    width: 350,
-    margin: 'auto',
     "& > :last-child": { margin: 0 },
     '& > *': { margin: theme.spacing(0, 0, 2, 0) }
   },
@@ -68,7 +66,7 @@ const InfoForm = _ => {
   };
 
   return (
-    <form className={classes.root}>
+    <form>
       <TextField
         label="업체이름"
         className={classes.name}
