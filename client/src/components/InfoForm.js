@@ -66,7 +66,7 @@ const InfoForm = _ => {
   };
 
   return (
-    <form>
+    <form className={classes.root}>
       <TextField
         label="업체이름"
         className={classes.name}
