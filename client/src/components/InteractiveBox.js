@@ -52,7 +52,7 @@ const InteractiveBox = _ => {
   }, [me, image])
 
   const updateImage = (prevImages, updateImage) => ({ ...prevImages, ...updateImage });
-  const onSubmit = async () => {
+  const onSubmit = async _ => {
     const { data } = await axios.patch(
       `/images/${imageId}/${hasLiked ? "unlike" : "like"}`
     );
@@ -62,14 +62,22 @@ const InteractiveBox = _ => {
       setTempImages(prevData => updateImage(prevData, data));
     setHasLiked(!hasLiked);
   };
-  const deleteHandler = async () => {
+  const deleteHandler = async _ => {
     try {
       if (!window.confirm("정말 해당 이미지를 삭제하시겠습니까?"))
         return;
       const { data } = await axios.delete(`/images/${imageId}`)
       toast.success(data.message);
-      setImages(prevData => ({ ...prevData, ...data }));
-      setTempImages(prevData => ({ ...prevData, ...data }));
+      console.log(imageId);
+      if (data.result[imageId].public)
+        setImages(prevData => {
+          const restData = Object.keys(prevData).reduce((acc, key) => {
+            if (key !== imageId)
+              acc[key] = prevData[key]
+            return acc
+          }, {})
+          return restData
+        });
       history.push("/");
     } catch (err) {
       toast.error(err.message);
