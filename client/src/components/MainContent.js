@@ -1,5 +1,7 @@
 import React, { useContext, useRef, useEffect, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import axios from "axios";
 
 import { ImageContext } from '../context/ImageContext';
 
@@ -8,13 +10,12 @@ import './MainContent.css';
 
 const MainContent = memo(() => {
   const {
-    images,
-    isPublic,
-    setIsPublic,
+    images, setImages,
+    isPublic, setIsPublic,
     setImageUrl,
     imageLoading,
     imageError,
-    imageLoadLock
+    imageLoadLock, setImageLoadLock
   } = useContext(ImageContext);
   const elementRef = useRef(null);
 
@@ -22,13 +23,13 @@ const MainContent = memo(() => {
     ? Object.keys(images)[Object.keys(images).length - 1]
     : null;
 
-  const loaderMoreImages = useCallback(() => {
+  const loaderMoreImages = useCallback(_ => {
     if (imageLoading || !lastImageId)
       return;
     setImageUrl(`/images?ispublic=${isPublic}&lastid=${lastImageId}`);
   }, [lastImageId, imageLoading, isPublic, setImageUrl]);
 
-  useEffect(() => {
+  useEffect(_ => {
     if (!elementRef.current)
       return;
     if (imageLoadLock)
@@ -40,6 +41,16 @@ const MainContent = memo(() => {
     observer.observe(elementRef.current);
     return () => observer.disconnect();
   }, [loaderMoreImages, imageLoadLock]);
+
+  const onClick = async e => {
+    e.preventDefault();
+    await axios.get('/partner/search?near=true')
+      .then(({ data }) => {
+        setImageLoadLock(true);
+        setImages({ ...data });
+      })
+      .catch(err => toast.error(err.response.data.message));
+  };
 
   const imgTagList = [];
   const maxLength = Object.keys(images).length
@@ -70,11 +81,7 @@ const MainContent = memo(() => {
         >
           {(!isPublic ? "고정 운영" : "한시적 운영") + " 업체 보기"}
         </button>
-        <button
-          onCLick={_ => {
-            
-          }}
-        >
+        <button onClick={onClick}>
           학교주변업체 조회
         </button>
       </div>

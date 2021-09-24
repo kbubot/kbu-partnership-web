@@ -8,17 +8,19 @@ const Image = require('../models/Image');
 
 PRODUCTION_URL = process.env.ELK_DOMAIN + "/partners/_search"
 DEV_URL = "http://localhost:9200/partners/_search"
+UNIV_COORD = '37.64894385920717, 127.06431989717667'
 
-
-partnerRouter.put('/', async (req, res) => {
+partnerRouter.put('/info', async (req, res) => {
   try {
     let partner = await Partner.findOne({ imageId: req.body.imageId });
     const updateableData = {
       name: req.body.name,
       category: req.body.category,
       benefit: req.body.benefit,
-      latitude: req.body.latitude,
-      longitude: req.body.longitude,
+      location: {
+        lat: req.body.latitude,
+        lon: req.body.longitude,
+      },
       imageId: req.body.imageId
     }
     if (!partner)
@@ -30,37 +32,45 @@ partnerRouter.put('/', async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
-
-partnerRouter.get('/:imageId', async (req, res) => {
+partnerRouter.get('/info/:imageId', async (req, res) => {
+  const { imageId } = req.params;
+  if (!imageId)
+    res.status(204).json({ message: "parameter is undefined" })
   try {
-    const partner = await Partner.findOne({ imageId: req.params.imageId });
+    const partner = await Partner.findOne({ imageId: imageId });
     res.json(partner);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
-
-partnerRouter.get('/search/:keyword', async (req, res) => {
-  const { keyword } = req.params;
-  await axios.get(DEV_URL, {
-    headers: { "Content-Type": "application/json" },
-    data: {
-      "query": {
-        "bool": {
-          "should": [
-            {
-              "match": { "category": keyword }
-            },
-            {
-              "match": { "name": keyword }
-            },
-            {
-              "match": { "benefit.nori": keyword }
-            }
-          ]
+partnerRouter.get('/search', async (req, res) => {
+  const { keyword, near } = req.query;
+  let data = { "query": { "bool": {} } }
+  if (keyword && !near)
+    data.query.bool.should = [
+      {
+        "match": { "category": keyword }
+      },
+      {
+        "match": { "name": keyword }
+      },
+      {
+        "match": { "benefit.nori": keyword }
+      }
+    ]
+  else if (!keyword && near)
+    data.query.bool.filter = {
+      "geo_distance": {
+        "distance": "1km",
+        "location": {
+          "lat": 37.64894385920717,
+          "lon": 127.06431989717667
         }
       }
-    }
+    };
+  await axios.get(PRODUCTION_URL || DEV_URL, {
+    headers: { "Content-Type": "application/json" },
+    data: data
   })
     .then(async elasticResult => {
       const imageIdList = elasticResult.data.hits.hits.map(

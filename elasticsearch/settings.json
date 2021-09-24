@@ -46,11 +46,8 @@
       "imageId" : {
         "type" : "keyword"
       },
-      "latitude" : {
-        "type" : "float"
-      },
-      "longitude" : {
-        "type" : "float"
+      "location": {
+        "type" : "geo_point"
       },
       "name" : {
         "type" : "text",

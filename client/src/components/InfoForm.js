@@ -36,10 +36,10 @@ const InfoForm = _ => {
   const [benefit, setBenefit] = useState("");
   const [lat, setLat] = useState(0);
   const [lng, setLng] = useState(0);
-  const { imageId } = useParams();
+  const { imageId } = useParams(null);
 
-  useEffect(() => {
-    axios.get(`/partner/${imageId}`)
+  useEffect(_ => {
+    axios.get(`/partner/info/${imageId}`)
       .then(({ data }) => {
         setName(data.name);
         setCategory(data.category);
@@ -55,10 +55,16 @@ const InfoForm = _ => {
   const onSubmit = async e => {
     e.preventDefault();
     try {
-      await axios.put(
-        "/partner",
-        { name, category, benefit, imageId, latitude: lat, longitude: lng }
-      );
+      await axios({
+        url: "/partner/info",
+        method: "put",
+        data: {
+          name, category, benefit,
+          imageId,
+          latitude: lat,
+          longitude: lng
+        }
+      });
       toast.success("제출 완료!");
     } catch (err) {
       toast.error(err.response.data.message);

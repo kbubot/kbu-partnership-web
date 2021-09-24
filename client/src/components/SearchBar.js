@@ -35,7 +35,7 @@ const SearchBar = () => {
     e.preventDefault();
     await axios.get(
       searchKeyword
-        ? `/partner/search/${searchKeyword}`
+        ? `/partner/search?keyword=${searchKeyword}`
         : imageUrl
     )
       .then(({ data }) => {
@@ -51,7 +51,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div>
+    <>
       <Paper component="form" className={classes.paper} onSubmit={onSubmit}>
         <InputBase
           className={classes.input}
@@ -62,7 +62,7 @@ const SearchBar = () => {
           <SearchIcon />
         </IconButton>
       </Paper>
-    </div>
+    </>
   );
 };
 
