@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 import { ImageContext } from '../context/ImageContext';
 
 import Image from './Image';
-import './ImageList.css';
+import './MainContent.css';
 
-const ImageList = memo(() => {
+const MainContent = memo(() => {
   const {
     images,
     isPublic,
@@ -56,26 +56,36 @@ const ImageList = memo(() => {
     </Link>));
   })
   return (
-    <div>
-      <h3
-        style={{ display: "inline-block", marginRight: 10 }}
-      >
-        {/* 그해 시간 체크하기 */}
-        {isPublic ? "2021" : "한시적 운영"} 제휴업체 사진
-      </h3>
-      <button onClick={_ => {
-        setIsPublic(!isPublic);
-        setImageUrl(`/images?ispublic=${!isPublic}`);
-      }}>
-        {(!isPublic ? "고정 운영" : "한시적 운영") + " 업체 보기"}
-      </button>
+    <>
+      <div className="main-bar-container">
+        <h3>
+          {/* 그해 시간 체크하기 */}
+          {isPublic ? "2021" : "한시적 운영"} 제휴업체 사진
+        </h3>
+        <button
+          onClick={_ => {
+            setIsPublic(!isPublic);
+            setImageUrl(`/images?ispublic=${!isPublic}`);
+          }}
+        >
+          {(!isPublic ? "고정 운영" : "한시적 운영") + " 업체 보기"}
+        </button>
+        <button
+          onCLick={_ => {
+            
+          }}
+        >
+          학교주변업체 조회
+        </button>
+      </div>
+
       <div className="image-list-container">
         {imgTagList}
       </div>
       {imageError && <div>Error...</div>}
       {imageLoading && <div>Loading...</div>}
-    </div>
+    </ >
   );
 });
 
-export default ImageList;
+export default MainContent;

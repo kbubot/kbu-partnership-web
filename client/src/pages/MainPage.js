@@ -1,23 +1,18 @@
-import React, { useState } from 'react';
-
-import {
-  Divider, Button,
-  Dialog, DialogContent, DialogActions, DialogTitle
-} from '@material-ui/core';
+import React, { useState, useEffect } from 'react';
 import { ToggleButton } from '@material-ui/lab';
 import ControlPointIcon from '@material-ui/icons/ControlPoint';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import { ThemeProvider, unstable_createMuiStrictModeTheme } from '@material-ui/core/styles';
 
-import ImageList from '../components/ImageList';
+import MainContent from '../components/MainContent';
 import SearchBar from '../components/SearchBar';
-import InfoForm from '../components/InfoForm';
-import UploadForm from '../components/UploadForm';
-
-const theme = unstable_createMuiStrictModeTheme();
+import RegisterModal from '../components/RegisterModal';
 
 const MainPage = () => {
   const [selected, setSelected] = useState(false);
+
+  useEffect(_ => {
+    return _ => setSelected(false);
+  }, []);
   return (
     <>
       <div
@@ -44,29 +39,9 @@ const MainPage = () => {
           {selected ? <HighlightOffIcon /> : <ControlPointIcon />}
         </ToggleButton>
       </div>
-      <ThemeProvider theme={theme}>
-        <Dialog open={selected}>
-          <div style={{ overflow: "hidden" }}>
-            <DialogActions style={{ float: "right" }}>
-              <Button
-                variant="outlined"
-                onClick={_ => setSelected(!selected)}
-              >닫기</Button>
-            </DialogActions>
-            <DialogTitle style={{ display: "inline-block", float: "left" }}>
-              <b>새 제휴업체 등록</b>
-            </DialogTitle>
-          </div>
-          <DialogContent>
-            <UploadForm />
-            <Divider style={{ margin: "20px 0" }} />
-            <InfoForm />
-          </DialogContent>
-        </Dialog>
-      </ThemeProvider>
-
+      <RegisterModal selected={selected} setSelected={setSelected} />
       <SearchBar />
-      <ImageList />
+      <MainContent />
     </>
   );
 };

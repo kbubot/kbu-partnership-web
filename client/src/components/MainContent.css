@@ -1,3 +1,17 @@
+.main-bar-container{
+  overflow: hidden;
+  padding: 20px 0;
+}
+.main-bar-container > h3{
+  float: left;
+  margin: 0 10px 0 0
+}
+.main-bar-container > button{
+  float: left;
+}
+.main-bar-container > button:last-child{
+  float: right;
+}
 .image-list-container{
   display: flex;
   flex-wrap: wrap;
