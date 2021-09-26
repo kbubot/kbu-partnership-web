@@ -8,9 +8,9 @@ import { ImageContext } from '../context/ImageContext';
 import Image from './Image';
 import './MainContent.css';
 
-const MainContent = memo(() => {
+const MainContent = memo(_ => {
   const {
-    images, setImages,
+    images, setImages, setTempImages,
     isPublic, setIsPublic,
     setImageUrl,
     imageLoading,
@@ -44,10 +44,13 @@ const MainContent = memo(() => {
 
   const onClick = async e => {
     e.preventDefault();
-    await axios.get('/partner/search?near=true')
+    await axios.get(`/partner/search?near=true&ispublic=${isPublic}`)
       .then(({ data }) => {
         setImageLoadLock(true);
-        setImages({ ...data });
+        if (isPublic)
+          setImages({ ...data });
+        else
+          setTempImages({ ...data });
       })
       .catch(err => toast.error(err.response.data.message));
   };

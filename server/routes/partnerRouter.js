@@ -8,7 +8,11 @@ const Image = require('../models/Image');
 
 PRODUCTION_URL = process.env.ELK_DOMAIN + "/partners/_search"
 DEV_URL = "http://localhost:9200/partners/_search"
-UNIV_COORD = '37.64894385920717, 127.06431989717667'
+UNIV_COORD = {
+  "lat": 37.64894385920717,
+  "lon": 127.06431989717667
+}
+'37.64894385920717, 127.06431989717667'
 
 partnerRouter.put('/info', async (req, res) => {
   try {
@@ -44,7 +48,7 @@ partnerRouter.get('/info/:imageId', async (req, res) => {
   }
 });
 partnerRouter.get('/search', async (req, res) => {
-  const { keyword, near } = req.query;
+  const { keyword, near, ispublic } = req.query;
   let data = { "query": { "bool": {} } }
   if (keyword && !near)
     data.query.bool.should = [
@@ -62,13 +66,10 @@ partnerRouter.get('/search', async (req, res) => {
     data.query.bool.filter = {
       "geo_distance": {
         "distance": "1km",
-        "location": {
-          "lat": 37.64894385920717,
-          "lon": 127.06431989717667
-        }
+        "location": UNIV_COORD
       }
     };
-  await axios.get(PRODUCTION_URL || DEV_URL, {
+  await axios.get(DEV_URL, {
     headers: { "Content-Type": "application/json" },
     data: data
   })
@@ -78,7 +79,8 @@ partnerRouter.get('/search', async (req, res) => {
       );
       const images = await Image.find(
         {
-          _id: imageIdList
+          _id: imageIdList,
+          public: ispublic
         });
       const result = {};
       images.forEach(image => result[image.id] = image);

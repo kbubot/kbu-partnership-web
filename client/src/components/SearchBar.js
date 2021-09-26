@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect, useRef, memo } from 'react';
 import { toast } from 'react-toastify';
 import axios from "axios";
 
@@ -26,16 +26,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const SearchBar = () => {
+const SearchBar = memo(_ => {
   const classes = useStyles();
-  const { setImages, setImageLoadLock, imageUrl, setImageUrl, isPublic } = useContext(ImageContext);
+  const { setImages, setTempImages, setImageLoadLock, imageUrl, setImageUrl, isPublic } = useContext(ImageContext);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const confirmSearchKeyword = useRef();
+
+  useEffect(_ => {
+    if (!isPublic)
+      axios.get(`/partner/search?keyword=${confirmSearchKeyword.current}&ispublic=${isPublic}`)
+        .then(({ data }) => {
+          setImageLoadLock(true);
+          setTempImages({ ...data });
+        })
+        .catch(err => toast.error(err.response.data.message));
+  }, [isPublic, setImageLoadLock, setTempImages])
 
   const onSubmit = async e => {
     e.preventDefault();
     await axios.get(
       searchKeyword
-        ? `/partner/search?keyword=${searchKeyword}`
+        ? `/partner/search?keyword=${searchKeyword}&ispublic=${isPublic}`
         : imageUrl
     )
       .then(({ data }) => {
@@ -45,9 +56,13 @@ const SearchBar = () => {
           setImageLoadLock(false);
           setImageUrl(`/images?ispublic=${isPublic}`)
         }
-        setImages({ ...data });
+        if (isPublic)
+          setImages({ ...data });
+        else
+          setTempImages({ ...data });
       })
-      .catch(err => toast.error(err.response.data.message));
+      .catch(err => toast.error(err.response.data.message))
+      .finally(_ => confirmSearchKeyword.current = searchKeyword);
   };
 
   return (
@@ -64,6 +79,6 @@ const SearchBar = () => {
       </Paper>
     </>
   );
-};
+});
 
 export default SearchBar;
