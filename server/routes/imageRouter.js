@@ -75,9 +75,8 @@ imageRouter.get("/", async (req, res) => {
   }
 });
 imageRouter.get("/:imageId", async (req, res) => {
-  /**
-   * private으로 이미지 업로드 뒤 이미지페이지 갈시 권한이 없는 에러
-   */
+  // private으로 이미지 업로드 뒤 이미지페이지 갈시 권한이 없는 에러
+
   try {
     const { imageId } = req.params;
     if (!mongoose.isValidObjectId(imageId))
@@ -85,10 +84,6 @@ imageRouter.get("/:imageId", async (req, res) => {
     const image = await Image.findOne({ _id: imageId });
     if (!image)
       throw new Error("해당 이미지는 존재 하지 않습니다.");
-    if (!req.user
-      && req.user.id !== image.user._id.toString()
-    )
-      throw new Error("권한이 없습니다.");
     const result = {}
     result[image._id] = image;
     res.json(result);
@@ -129,6 +124,7 @@ imageRouter.put("/:prevImageId", upload.single('image'), async (req, res) => {
       { _id: prevImageId },
       {
         $set: {
+          'public': req.body.public,
           'key': req.file.filename,
           'originalFileName': req.file.originalname
         }

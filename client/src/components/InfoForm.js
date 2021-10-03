@@ -35,7 +35,7 @@ const InfoForm = _ => {
   const [category, setCategory] = useState("음식");
   const [benefit, setBenefit] = useState("");
   const [lat, setLat] = useState(0);
-  const [lng, setLng] = useState(0);
+  const [lon, setLon] = useState(0);
   const { imageId } = useParams(null);
 
   useEffect(_ => {
@@ -44,8 +44,8 @@ const InfoForm = _ => {
         setName(data.name);
         setCategory(data.category);
         setBenefit(data.benefit);
-        setLat(data.latitude);
-        setLng(data.longitude);
+        setLat(data.location.lat);
+        setLon(data.location.lon);
       })
       .catch(err => {
         console.log(err);
@@ -62,7 +62,7 @@ const InfoForm = _ => {
           name, category, benefit,
           imageId,
           latitude: lat,
-          longitude: lng
+          longitude: lon
         }
       });
       toast.success("제출 완료!");
@@ -114,8 +114,8 @@ const InfoForm = _ => {
         <Grid item xs={6}>
           <TextField
             label="경도"
-            value={lng}
-            onChange={e => setLng(e.target.value)}
+            value={lon}
+            onChange={e => setLon(e.target.value)}
           />
         </Grid>
       </Grid>
