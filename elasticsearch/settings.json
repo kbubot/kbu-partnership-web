@@ -8,6 +8,10 @@
           "filter": [
             "my_stop_filter"
           ]
+        },
+        "my_delimiter_analyzer": {
+          "tokenizer": "keyword",
+          "filter": [ "my_custom_word_delimiter_filter" ]
         }
       }, 
       "filter": {
@@ -17,8 +21,15 @@
             "E", "IC", "J", "MAG", "MAJ",
             "MM", "SP", "SSC", "SSO", "SC",
             "SE", "XPN", "XSA", "XSN", "XSV",
-            "UNA", "NA", "VSV", "NNB"
+            "UNA", "NA", "VSV", "NNB", "NNBC"
           ]
+        },
+        "my_custom_word_delimiter_filter": {
+          "type": "word_delimiter",
+          "type_table": [ ", => ALPHA" ],
+          "split_on_case_change": false,
+          "split_on_numerics": false,
+          "stem_english_possessive": true
         }
       }
     }
@@ -34,6 +45,10 @@
           "nori" : {
             "type" : "text",
             "analyzer" : "my_custom_analyzer"
+          },
+          "deli": {
+            "type": "text",
+            "analyzer": "my_delimiter_analyzer"
           }
         }
       },

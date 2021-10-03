@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef, memo } from 'react';
+import React, { useState, useContext, useMemo, useRef, memo } from 'react';
 import { toast } from 'react-toastify';
 import axios from "axios";
 
@@ -28,11 +28,13 @@ const useStyles = makeStyles((theme) => ({
 
 const SearchBar = memo(_ => {
   const classes = useStyles();
-  const { setImages, setTempImages, setImageLoadLock, imageUrl, setImageUrl, isPublic } = useContext(ImageContext);
+  const { setImages, setTempImages, setImageLoadLock, setImageUrl, isPublic } = useContext(ImageContext);
   const [searchKeyword, setSearchKeyword] = useState("");
   const confirmSearchKeyword = useRef();
 
-  useEffect(_ => {
+  useMemo(_ => {
+    if (!confirmSearchKeyword.current)
+      return;
     if (!isPublic)
       axios.get(`/partner/search?keyword=${confirmSearchKeyword.current}&ispublic=${isPublic}`)
         .then(({ data }) => {
@@ -47,7 +49,7 @@ const SearchBar = memo(_ => {
     await axios.get(
       searchKeyword
         ? `/partner/search?keyword=${searchKeyword}&ispublic=${isPublic}`
-        : imageUrl
+        : `/images?ispublic=${isPublic}`
     )
       .then(({ data }) => {
         if (searchKeyword) {
