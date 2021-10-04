@@ -46,7 +46,7 @@ partnerRouter.get('/info/:imageId', async (req, res) => {
 partnerRouter.get('/search', async (req, res) => {
   const { keyword, near, ispublic } = req.query;
   let data = { "query": { "bool": {} } }
-  if (keyword.match(/[\d]+원|\d{1,2}[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]원?/))
+  if (keyword && keyword.match(/[\d]+원|[\d{1,2}]?[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]원?/))
     data.query.bool.must = [
       { "match": { "benefit.deli": keyword } }
     ]
