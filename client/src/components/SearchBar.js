@@ -46,15 +46,14 @@ const SearchBar = memo(_ => {
 
   const onSubmit = async e => {
     e.preventDefault();
+    setImageLoadLock(true);
     await axios.get(
       searchKeyword
         ? `/partner/search?keyword=${searchKeyword}&ispublic=${isPublic}`
         : `/images?ispublic=${isPublic}`
     )
       .then(({ data }) => {
-        if (searchKeyword) {
-          setImageLoadLock(true);
-        } else {
+        if (!searchKeyword) {
           setImageLoadLock(false);
           setImageUrl(`/images?ispublic=${isPublic}`)
         }

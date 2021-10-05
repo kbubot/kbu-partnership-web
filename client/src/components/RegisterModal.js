@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   Button,
   Dialog, DialogContent, DialogActions, DialogTitle
@@ -9,7 +9,7 @@ import UploadForm from './UploadForm';
 
 const theme = unstable_createMuiStrictModeTheme();
 
-const RegisterModal = ({ selected, setSelected }) => {
+const RegisterModal = memo(({ selected, setSelected }) => {
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -32,6 +32,6 @@ const RegisterModal = ({ selected, setSelected }) => {
       </ThemeProvider>
     </>
   )
-}
+});
 
 export default RegisterModal;

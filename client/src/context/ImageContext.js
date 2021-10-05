@@ -12,7 +12,7 @@ export const ImageProvider = (prop) => {
   const [imageLoadLock, setImageLoadLock] = useState(false);
   const pastImageUrl = useRef();
 
-  useEffect(() => {
+  useEffect(_ => {
     if (pastImageUrl.current === imageUrl)
       return;
     if (imageLoadLock)
@@ -21,7 +21,11 @@ export const ImageProvider = (prop) => {
     axios.get(imageUrl)
       .then(result =>
         isPublic
-          ? setImages(prevData => ({ ...prevData, ...result.data }))
+          ? setImages(prevData =>
+            imageUrl.match(/lastid/)
+              ? ({ ...prevData, ...result.data })
+              : ({ ...result.data })
+          )
           : setTempImages(prevData => ({ ...prevData, ...result.data }))
       )
       .catch(err => setImageError(err))

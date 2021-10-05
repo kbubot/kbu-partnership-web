@@ -11,7 +11,7 @@ import ProgressBar from './ProgressBar';
 
 
 const UploadForm = ({ prevImageId }) => {
-  const { setImages, setMyImages } = useContext(ImageContext);
+  const { setImages, setTempImages } = useContext(ImageContext);
   const history = useHistory();
   const [files, setFiles] = useState(null);
   const [previews, setPreviews] = useState([]);
@@ -63,13 +63,9 @@ const UploadForm = ({ prevImageId }) => {
       });
 
       if (isPublic)
-        setImages(prevData =>
-          prevImageId
-            ? { ...prevData, ...res.data }
-            : { ...res.data, ...prevData }
-        );
+        setImages(prevData => ({ ...prevData, ...res.data }));
       else
-        setMyImages(prevData => ({ ...res.data, ...prevData }));
+        setTempImages(prevData => ({ ...prevData, ...res.data }));
       toast.success("이미지 업로드 성공!");
 
       setTimeout(() => {
@@ -121,11 +117,11 @@ const UploadForm = ({ prevImageId }) => {
       </div>
       <input
         type="checkbox"
-        id="public-check"
+        id="temporary-check"
         value={isPublic}
         onChange={_ => { setIsPublic(!isPublic) }}
       />
-      <label htmlFor="public-check">비공개</label>
+      <label htmlFor="temporary-check">한시적 운영 업체</label>
       <button
         type="submit"
         disabled={isLoading}
