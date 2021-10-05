@@ -1,6 +1,8 @@
+import 'dotenv/config';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
+
 import { ImageProvider } from "./context/ImageContext";
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter } from 'react-router-dom';

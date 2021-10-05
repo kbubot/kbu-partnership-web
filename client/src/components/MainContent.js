@@ -8,6 +8,8 @@ import { ImageContext } from '../context/ImageContext';
 import Image from './Image';
 import './MainContent.css';
 
+const { REACT_APP_PROD_SERVER_DOMAIN } = process.env;
+
 const MainContent = memo(_ => {
   const {
     images, setImages, setTempImages,
@@ -66,7 +68,7 @@ const MainContent = memo(_ => {
         : undefined
       }
     >
-      <Image imageUrl={`http://localhost:5000/uploads/w140/${image.key}`} />
+      <Image imageUrl={`${REACT_APP_PROD_SERVER_DOMAIN}/uploads/w140/${image.key}`} />
     </Link>));
   })
   return (
