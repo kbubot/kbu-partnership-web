@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const mongoose = require('mongoose');
+const path = require('path');
 const fs = require("fs");
 const { promisify } = require("util");
 
@@ -34,7 +35,7 @@ imageRouter.post('/', upload.array("image"), async (req, res) => {
 
         transformationOptions.map(async ({ name, width }) => {
           try {
-            const keyOnly = file.path.split("\\")[2];
+            const keyOnly = file.path.split(path.sep)[2];
             const newKey = `${name}/${keyOnly}`;
             await sharp(file.path)
               .rotate()
@@ -132,7 +133,7 @@ imageRouter.put("/:prevImageId", upload.single('image'), async (req, res) => {
     );
     let keyOnly = ""
     transformationOptions.map(async ({ name, width }) => {
-      keyOnly = req.file.path.split("\\")[2];
+      keyOnly = req.file.path.split(path.sep)[2];
       const newKey = `${name}/${keyOnly}`;
       await sharp(req.file.path)
         .rotate()
