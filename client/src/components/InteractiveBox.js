@@ -14,7 +14,7 @@ import { AuthContext } from '../context/AuthContext';
 
 import UploadForm from '../components/UploadForm';
 
-const { REACT_APP_PROD_SERVER_DOMAIN } = process.env;
+const { REACT_APP_PROD_SERVER_DOMAIN, REACT_APP_DEV_SERVER_DOMAIN } = process.env;
 
 const InteractiveBox = _ => {
   const history = useHistory();
@@ -99,7 +99,7 @@ const InteractiveBox = _ => {
           <img
             style={{ width: '100%', objectFit: 'cover' }}
             alt={imageId}
-            src={`${REACT_APP_PROD_SERVER_DOMAIN}/uploads/w600/${image.key}`}
+            src={`${REACT_APP_DEV_SERVER_DOMAIN}/uploads/w600/${image.key}`}
           />
         }
       </div>

@@ -7,7 +7,6 @@ const Image = ({ imageUrl }) => {
   useEffect(() => {
     let intervalId;
     if (isError && !intervalId) {
-      console.log(imageUrl);
       intervalId = setInterval(() => setHashedUrl(`${imageUrl}#${Date.now()}`), 1000);
     }
     else if (!isError && intervalId)
@@ -20,12 +19,11 @@ const Image = ({ imageUrl }) => {
   return (
     <img
       alt=""
-      onError={() => setIsError(true)}
-      onLoad={() => setIsError(false)}
+      onError={_ => setIsError(true)}
+      onLoad={_ => setIsError(false)}
       style={{ display: isError ? "none" : "block" }}
       src={hashedUrl}
     />
   )
 }
-
 export default Image;
