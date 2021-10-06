@@ -8,18 +8,14 @@ const authenticate = async (req, res, next) => {
 
   const beforeFilter = await User.findOne({ "sessions._id": sessionid });
   const expired_sessions = beforeFilter.sessions.map(session => {
-    if (Date.now() - new Date(session.createdAt).getTime() > 60 * 60)
-      return mongoose.Types.ObjectId(session._id)
+    if (Date.now() - new Date(session.createdAt).getTime() > 600000)
+      return mongoose.Types.ObjectId(session._id);
   });
-  console.log(expired_sessions);
   const user = await User.findOneAndUpdate(
-    { "sessions._id": sessionid },
+    { _id: beforeFilter.id },
     {
-      $pullAll: {
-        "sessions.id": expired_sessions
-      }
-    },
-    { new: true }
+      $pull: { sessions: { _id: { $in: expired_sessions } } }
+    }
   );
   if (!user)
     return next();
