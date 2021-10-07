@@ -7,10 +7,7 @@ const ImageSchema = new mongoose.Schema(
       name: { type: String, required: true },
       username: { type: String, required: true },
     },
-    /**
-     * TODO: likes배열에 객체를 추가시켜 좋아요를 누른 사람 보여주기
-     */
-    likes: [{ type: mongoose.Types.ObjectId }],
+    likes: [{ type: mongoose.Types.ObjectId }], 
     public: { type: Boolean, required: true, default: false },
     key: { type: String, required: true },
     originalFileName: { type: String, required: true },

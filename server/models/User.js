@@ -5,7 +5,6 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   hashedPassword: { type: String, required: true },
   sessions: [
-    // _id를 세션 id로 사용한다.
     {
       createdAt: { type: Date, required: true },
     }]

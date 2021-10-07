@@ -6,7 +6,7 @@ require('dotenv').config();
 const Partner = require('../models/Partner');
 const Image = require('../models/Image');
 
-PRODUCTION_URL = process.env.ELK_DOMAIN + "/partners/_search"
+PRODUCTION_URL = process.env.ELK_DOMAIN + "/partners_deli/_search"
 DEV_URL = "http://localhost:9200/partners_deli/_search"
 UNIV_COORD = { "lat": 37.64894385920717, "lon": 127.06431989717667 }
 
@@ -46,10 +46,11 @@ partnerRouter.get('/info/:imageId', async (req, res) => {
 partnerRouter.get('/search', async (req, res) => {
   const { keyword, near, ispublic } = req.query;
   let data = { "query": { "bool": {} } }
-  if (keyword && keyword.match(/[\d]+원|[\d{1,2}]?[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]원?/))
+  if (keyword && keyword === keyword.match(/[\d]+원|[\d{1,2}]?[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]원?/)[0]) {
     data.query.bool.must = [
       { "match": { "benefit.deli": keyword } }
     ]
+  }
   else if (keyword && !near) {
     data.query.bool.should = [
       { "match": { "category": keyword } },
@@ -66,7 +67,7 @@ partnerRouter.get('/search', async (req, res) => {
       }
     };
 
-  await axios.get(DEV_URL, {
+  await axios.get(PRODUCTION_URL, {
     headers: { "Content-Type": "application/json" },
     data: data
   })
