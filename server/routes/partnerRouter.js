@@ -1,15 +1,62 @@
-const { Router } = require('express');
-const partnerRouter = Router();
-const axios = require('axios');
 require('dotenv').config();
+const { Router } = require('express');
+const path = require('path');
+const axios = require('axios');
+const sharp = require('sharp');
 
 const Partner = require('../models/Partner');
 const Image = require('../models/Image');
+const upload = require('../middleware/imageUpload');
+const { RESIZE_VALUE, UNIV_COORD } = require('../utils/dummyData');
+
+const partnerRouter = Router();
 
 PRODUCTION_URL = process.env.ELK_DOMAIN + "/partners_deli/_search"
 DEV_URL = "http://localhost:9200/partners_deli/_search"
-UNIV_COORD = { "lat": 37.64894385920717, "lon": 127.06431989717667 }
 
+partnerRouter.post('/info', upload.single("image"), async (req, res) => {
+  try {
+    if (!req.user)
+      throw new Error("권한이 없습니다.");
+    const image = await new Image({
+      user: {
+        _id: req.user.id,
+        name: req.user.name,
+        username: req.user.username,
+      },
+      public: req.body.public,
+      key: req.file.filename,
+      originalFileName: req.file.originalname
+    }).save();
+    await new Partner({
+      name: req.body.name,
+      category: req.body.category,
+      benefit: req.body.benefit,
+      location: {
+        lat: req.body.latitude,
+        lon: req.body.longitude,
+      },
+      imageId: image._id
+    }).save();
+    RESIZE_VALUE.map(async ({ name, width }) => {
+      try {
+        const keyOnly = req.file.path.split(path.sep)[2];
+        const newKey = `${name}/${keyOnly}`;
+        await sharp(req.file.path)
+          .rotate()
+          .resize({ width, height: width, fit: "outside" })
+          .toFile(`./uploads/${newKey}`);
+      } catch (err) {
+        throw err;
+      }
+    });
+    const result = {};
+    result[image._id] = image;
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 partnerRouter.put('/info', async (req, res) => {
   try {
     let partner = await Partner.findOne({ imageId: req.body.imageId });

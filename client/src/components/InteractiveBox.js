@@ -13,15 +13,21 @@ import { ImageContext } from '../context/ImageContext';
 import { AuthContext } from '../context/AuthContext';
 
 import UploadForm from '../components/UploadForm';
+import './UploadForm.css'
 
-const { REACT_APP_PROD_SERVER_DOMAIN, REACT_APP_DEV_SERVER_DOMAIN } = process.env;
+const { REACT_APP_DEV_SERVER_DOMAIN } = process.env;
 
 const InteractiveBox = _ => {
   const history = useHistory();
   const { imageId } = useParams();
-  const { images, setImages, setTempImages } = useContext(ImageContext);
   const [me] = useContext(AuthContext);
+  const { images, setImages, setTempImages } = useContext(ImageContext);
 
+  const [files, setFiles] = useState(null);
+  const [previews, setPreviews] = useState([]);
+  const [percent, setPercent] = useState(0);
+  const [isPublic, setIsPublic] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [image, setImage] = useState();
   const [hasLiked, setHasLiked] = useState(false);
   const [hasEdit, setHasEdit] = useState(false);
@@ -69,7 +75,6 @@ const InteractiveBox = _ => {
         return;
       const { data } = await axios.delete(`/images/${imageId}`)
       toast.success(data.message);
-      console.log(imageId);
       if (data.result[imageId].public)
         setImages(prevData => {
           const restData = Object.keys(prevData).reduce((acc, key) => {
@@ -84,6 +89,44 @@ const InteractiveBox = _ => {
       toast.error(err.message);
     }
   };
+  const imageSubmit = async e => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const formData = new FormData();
+    for (let file of files)
+      formData.append("image", file);
+    formData.append("public", isPublic);
+
+    try {
+      const res = await axios({
+        url: `/images/${imageId}`,
+        method: 'put',
+        data: formData,
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: e => setPercent(Math.round(100 * e.loaded / e.total))
+      });
+
+      if (isPublic)
+        setImages(prevData => ({ ...prevData, ...res.data }));
+      else
+        setTempImages(prevData => ({ ...prevData, ...res.data }));
+      toast.success("이미지 업로드 성공!");
+
+      setTimeout(() => {
+        setPercent(0);
+        setPreviews([]);
+        setIsLoading(false);
+        if (imageId) history.push("/");
+      }, 2000);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response.data.message);
+      setPercent(0);
+      setPreviews([]);
+      setIsLoading(false);
+    }
+  };
 
   if (error)
     return <h3>Error...</h3>
@@ -92,17 +135,35 @@ const InteractiveBox = _ => {
 
   return (
     <>
-      <div>
-        {me && hasEdit
-          ? <UploadForm prevImageId={imageId} />
-          :
-          <img
-            style={{ width: '100%', objectFit: 'cover' }}
-            alt={imageId}
-            src={`${REACT_APP_DEV_SERVER_DOMAIN}/uploads/w600/${image.key}`}
-          />
-        }
-      </div>
+      {me && hasEdit
+        ? (
+          <>
+            <UploadForm
+              value={{
+                files, setFiles,
+                previews, setPreviews,
+                percent, setPercent,
+                isPublic, setIsPublic,
+                isLoading, setIsLoading
+              }}
+            />
+            <button
+              className="lg-btn"
+              type="submit"
+              onClick={imageSubmit}
+              disabled={isLoading}
+            >
+              제출
+            </button>
+          </>
+        )
+        :
+        <img
+          style={{ width: '100%', objectFit: 'cover' }}
+          alt={imageId}
+          src={`${REACT_APP_DEV_SERVER_DOMAIN}/uploads/w600/${image.key}`}
+        />
+      }
       <span>좋아요 {image.likes.length}</span>
       {me && image.user._id === me.userId
         &&

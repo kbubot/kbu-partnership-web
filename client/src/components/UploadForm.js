@@ -1,24 +1,21 @@
-import React, { useState, useContext, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import axios from 'axios';
+import React, { useRef } from 'react';
 
 import 'react-toastify/dist/ReactToastify.css';
 import './UploadForm.css'
 
-import { ImageContext } from '../context/ImageContext';
 import ProgressBar from './ProgressBar';
 
 
-const UploadForm = ({ prevImageId }) => {
-  const { setImages, setTempImages } = useContext(ImageContext);
-  const history = useHistory();
-  const [files, setFiles] = useState(null);
-  const [previews, setPreviews] = useState([]);
-  const [percent, setPercent] = useState(0);
-  const [isPublic, setIsPublic] = useState(true);
+const UploadForm = ({ value }) => {
+  const {
+    setFiles,
+    previews, setPreviews,
+    percent,
+    isPublic, setIsPublic,
+    setIsLoading
+  } = value;
+
   const inputRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const imageSelectHandler = async (e) => {
     const imageFiles = e.target.files;
@@ -44,45 +41,6 @@ const UploadForm = ({ prevImageId }) => {
     setIsLoading(false);
   };
 
-  const onSubmit = async e => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    const formData = new FormData();
-    for (let file of files)
-      formData.append("image", file);
-    formData.append("public", isPublic);
-
-    try {
-      const res = await axios({
-        url: prevImageId ? `/images/${prevImageId}` : `/images`,
-        method: prevImageId ? 'put' : 'post',
-        data: formData,
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: e => setPercent(Math.round(100 * e.loaded / e.total))
-      });
-
-      if (isPublic)
-        setImages(prevData => ({ ...prevData, ...res.data }));
-      else
-        setTempImages(prevData => ({ ...prevData, ...res.data }));
-      toast.success("이미지 업로드 성공!");
-
-      setTimeout(() => {
-        setPercent(0);
-        setPreviews([]);
-        setIsLoading(false);
-        inputRef.current = null;
-        if (prevImageId) history.push("/");
-      }, 2000);
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response.data.message);
-      setPercent(0);
-      setPreviews([]);
-      setIsLoading(false);
-    }
-  }
   const previewImages = previews.map((preview, index) => (
     <img
       key={index}
@@ -96,7 +54,7 @@ const UploadForm = ({ prevImageId }) => {
     "이미지 파일을 업로드 해주세요." :
     previews.reduce((previous, current) => previous + ` ${current.fileName}`, "");
   return (
-    <form className="file-sender" onSubmit={onSubmit}>
+    <form className="file-sender">
       <div style={{
         display: "flex",
         flexWrap: "wrap"
@@ -122,12 +80,6 @@ const UploadForm = ({ prevImageId }) => {
         onChange={_ => { setIsPublic(!isPublic) }}
       />
       <label htmlFor="temporary-check">한시적 운영 업체</label>
-      <button
-        type="submit"
-        disabled={isLoading}
-      >
-        제출
-      </button>
     </form >
   )
 }
