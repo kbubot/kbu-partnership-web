@@ -3,18 +3,14 @@ const mongoose = require('mongoose');
 const path = require('path');
 const fs = require("fs");
 const { promisify } = require("util");
+const sharp = require('sharp');
 
 const Image = require('../models/Image');
 const upload = require('../middleware/imageUpload');
-const sharp = require('sharp');
+const { RESIZE_VALUE } = require('../utils/dummyData');
 
 const imageRouter = Router();
 const fileUnlink = promisify(fs.unlink);
-
-const transformationOptions = [
-  { name: 'w140', width: 140 },
-  { name: 'w600', width: 600 },
-]
 
 imageRouter.post('/', upload.array("image"), async (req, res) => {
   try {
@@ -33,7 +29,7 @@ imageRouter.post('/', upload.array("image"), async (req, res) => {
           originalFileName: file.originalname
         }).save();
 
-        transformationOptions.map(async ({ name, width }) => {
+        RESIZE_VALUE.map(async ({ name, width }) => {
           try {
             const keyOnly = file.path.split(path.sep)[2];
             const newKey = `${name}/${keyOnly}`;
@@ -76,8 +72,6 @@ imageRouter.get("/", async (req, res) => {
   }
 });
 imageRouter.get("/:imageId", async (req, res) => {
-  // private으로 이미지 업로드 뒤 이미지페이지 갈시 권한이 없는 에러
-
   try {
     const { imageId } = req.params;
     if (!mongoose.isValidObjectId(imageId))
@@ -132,7 +126,7 @@ imageRouter.put("/:prevImageId", upload.single('image'), async (req, res) => {
       }
     );
     let keyOnly = ""
-    transformationOptions.map(async ({ name, width }) => {
+    RESIZE_VALUE.map(async ({ name, width }) => {
       keyOnly = req.file.path.split(path.sep)[2];
       const newKey = `${name}/${keyOnly}`;
       await sharp(req.file.path)
