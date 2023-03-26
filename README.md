@@ -13,7 +13,7 @@ Bootstrapped with [Create React App](https://github.com/facebook/create-react-ap
 
 ### 1. production
 
-```json
+```
 // Check base url at package.json
 "homepage": "<host ip>:5000"
 
@@ -27,7 +27,7 @@ REACT_APP_PROD_SERVER_DOMAIN
 
 ### 2. dev
 
-```json
+```
 // Modify base url at package.json
 "proxy": "http://localhost:5000"
 
